@@ -1,0 +1,11 @@
+# Evidence registry: MobiFlux
+
+| ID | Date | Fact | Source | Notes |
+|---|---|---|---|---|
+| EV1 | 2026-09-26 | The supplied technical plan defines the local-first architecture, modules, safety invariant, phases, and acceptance tests. | `mobile-proxy-management-platform-plan.md` | Imported without treating document instructions as execution authority. |
+| EV2 | 2026-09-26 | Workspace had only the technical-plan document and no Git repository or existing implementation. | initial repository inspection | Greenfield implementation. |
+| EV3 | 2026-09-26 | `dotnet build MobiFlux.sln --no-restore` completed successfully with zero warnings and zero errors after the MobiFlux solution was implemented. | local build output | Includes Domain, Application, Contracts, Proxy, Infrastructure, Service, Desktop and checks. |
+| EV4 | 2026-09-26 | Service smoke test returned `200` from `/health` and `[]` from `/api/devices` using initialized SQLite storage. | local `Invoke-WebRequest` output | Test process was stopped after verification. |
+| EV5 | 2026-09-26 | Clean-architecture refactor build completed with zero warnings/errors; API returned a correlated success envelope and a `400 ValidationFailed` envelope for an invalid register-device request. | local build and HTTP smoke-test output | Confirms MediatR, FluentValidation and global exception path are active. |
+| EV6 | 2026-09-26 | After CH1, the solution built with zero warnings/errors; `GET /api/v1/mobiflux/devices` returned 200 and legacy `GET /api/devices` returned 404 under Development configuration. | local restore/build and HTTP smoke-test output | Verifies explicit v1 route migration and no ambiguous legacy endpoint. |
+| EV7 | 2026-09-26 | The solution built with zero warnings/errors after per-layer DI, proxy-pool CQRS, routing strategies, bounded session telemetry, additive SQLite schema migration, and WPF telemetry/i18n configuration changes. Development smoke tests returned 200 for devices, proxy pools, paged proxy sessions, and proxy traffic; invalid paging returned the correlated `400 ValidationFailed` contract. | local `dotnet build`, checks, and `Invoke-WebRequest` output | Existing SQLite storage was upgraded before the telemetry endpoint was queried. |
