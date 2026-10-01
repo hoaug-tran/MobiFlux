@@ -1,0 +1,58 @@
+# Build and IDE
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.DotSettings.user
+
+# Runtime data, logs and diagnostic output
+data/
+logs/
+diagnostics/
+backups/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+*.log.*
+
+# Secrets and machine/environment overrides
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.Local.json
+appsettings.*.local.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+*.pfx
+*.p12
+*.pem
+*.key
+*.snk
+
+# Android / Gradle / Kotlin
+android/.gradle/
+android/**/build/
+android/local.properties
+android/.idea/
+*.apk
+*.aab
+*.keystore
+
+# OS and tooling
+Thumbs.db
+Desktop.ini
+.DS_Store
+coverage/
+TestResults/
+_project/**/*.local.*

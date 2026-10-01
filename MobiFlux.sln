@@ -1,0 +1,44 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.0.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Domain", "src\MobiFlux.Domain\MobiFlux.Domain.csproj", "{B6EDEB9C-49B3-41E7-A6ED-0EE01E2D3371}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Shared", "src\MobiFlux.Shared\MobiFlux.Shared.csproj", "{216FB18C-3E6F-4770-98A1-E1938414EA9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Application", "src\MobiFlux.Application\MobiFlux.Application.csproj", "{ADD5D978-FA24-4B01-9C3D-D0192B62D231}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Proxy", "src\MobiFlux.Proxy\MobiFlux.Proxy.csproj", "{41B9B41B-CDED-4A0B-B308-4E35B9EBC897}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Infrastructure", "src\MobiFlux.Infrastructure\MobiFlux.Infrastructure.csproj", "{DB963C4C-BA9A-4D46-A8FC-E8729E1B9A96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Service", "src\MobiFlux.Service\MobiFlux.Service.csproj", "{77D4E943-4C24-40B6-9EED-92BAE91479E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Desktop", "src\MobiFlux.Desktop\MobiFlux.Desktop.csproj", "{709D0A41-ABFB-4D52-BD16-40AF6F4A1079}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobiFlux.Tests", "tests\MobiFlux.Tests\MobiFlux.Tests.csproj", "{DFEF754D-1E2F-448A-B2D3-E825DB6BC617}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6EDEB9C-49B3-41E7-A6ED-0EE01E2D3371}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6EDEB9C-49B3-41E7-A6ED-0EE01E2D3371}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{216FB18C-3E6F-4770-98A1-E1938414EA9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{216FB18C-3E6F-4770-98A1-E1938414EA9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADD5D978-FA24-4B01-9C3D-D0192B62D231}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADD5D978-FA24-4B01-9C3D-D0192B62D231}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41B9B41B-CDED-4A0B-B308-4E35B9EBC897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41B9B41B-CDED-4A0B-B308-4E35B9EBC897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB963C4C-BA9A-4D46-A8FC-E8729E1B9A96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB963C4C-BA9A-4D46-A8FC-E8729E1B9A96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77D4E943-4C24-40B6-9EED-92BAE91479E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77D4E943-4C24-40B6-9EED-92BAE91479E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{709D0A41-ABFB-4D52-BD16-40AF6F4A1079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{709D0A41-ABFB-4D52-BD16-40AF6F4A1079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFEF754D-1E2F-448A-B2D3-E825DB6BC617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFEF754D-1E2F-448A-B2D3-E825DB6BC617}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+EndGlobal
