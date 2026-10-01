@@ -1,0 +1,1732 @@
+<ui:FluentWindow x:Class="MobiFlux.Desktop.MainWindow"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                  Title="{DynamicResource Ui.Product}"
+                  Height="920"
+                  Width="1480"
+                  MinHeight="720"
+                  MinWidth="1180"
+                  WindowStartupLocation="CenterScreen"
+                  WindowBackdropType="None"
+                  ExtendsContentIntoTitleBar="True"
+                  Background="{DynamicResource Brush.Canvas}"
+                  FontFamily="Segoe UI Variable Text, Inter, Segoe UI"
+                  FontSize="14">
+
+  <ui:FluentWindow.Resources>
+    <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
+
+    <Style TargetType="Button" x:Key="Nav.Dashboard" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsDashboardActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Proxies" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsProxiesActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Devices" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsDevicesActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Sessions" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsSessionsActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Routing" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsRoutingActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Rotation" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsRotationActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Networking" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsNetworkingActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Health" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsHealthActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Logs" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsLogsActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="Nav.Settings" BasedOn="{StaticResource NavigationButton}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsSettingsActive}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Button" x:Key="DashTableBtn.Devices" BasedOn="{StaticResource Button.Segment}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsDashboardTableDevices}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="DashTableBtn.Endpoints" BasedOn="{StaticResource Button.Segment}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsDashboardTableEndpoints}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Button" x:Key="StrategyBtn.RoundRobin" BasedOn="{StaticResource Button.Base}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsStrategyRoundRobin}" Value="True">
+          <Setter Property="Background" Value="{DynamicResource Brush.AccentMuted}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
+          <Setter Property="Foreground" Value="{DynamicResource Brush.Accent}" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="StrategyBtn.Sticky" BasedOn="{StaticResource Button.Base}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsStrategySticky}" Value="True">
+          <Setter Property="Background" Value="{DynamicResource Brush.AccentMuted}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
+          <Setter Property="Foreground" Value="{DynamicResource Brush.Accent}" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="StrategyBtn.Least" BasedOn="{StaticResource Button.Base}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsStrategyLeastConnections}" Value="True">
+          <Setter Property="Background" Value="{DynamicResource Brush.AccentMuted}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
+          <Setter Property="Foreground" Value="{DynamicResource Brush.Accent}" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Button" x:Key="TfBtn.Today" BasedOn="{StaticResource Button.Segment}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsTimeframeToday}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="TfBtn.7Days" BasedOn="{StaticResource Button.Segment}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsTimeframe7Days}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" x:Key="TfBtn.30Days" BasedOn="{StaticResource Button.Segment}">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsTimeframe30Days}" Value="True">
+          <Setter Property="Tag" Value="Active" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </ui:FluentWindow.Resources>
+
+  <Grid Background="{DynamicResource Brush.Canvas}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <ui:TitleBar Grid.Row="0"
+                 x:Name="AppTitleBar"
+                 Title="{DynamicResource Ui.Product}"
+                 Height="40">
+      <ui:TitleBar.Icon>
+        <ui:SymbolIcon Symbol="Globe24" Foreground="{DynamicResource Brush.Accent}" />
+      </ui:TitleBar.Icon>
+    </ui:TitleBar>
+
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="250" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+
+      <Border Grid.Column="0"
+              Background="{DynamicResource Brush.Sidebar}"
+              BorderBrush="{DynamicResource Brush.Border}"
+              BorderThickness="0,0,1,0"
+              Padding="14,16">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <StackPanel Grid.Row="0" Margin="4,2,4,18">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Border Grid.Column="0"
+                      Background="{DynamicResource Brush.AccentMuted}"
+                      BorderBrush="{DynamicResource Brush.Border}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="8"
+                      Margin="0,0,10,0">
+                <ui:SymbolIcon Symbol="Globe24" Foreground="{DynamicResource Brush.Accent}" FontSize="20" />
+              </Border>
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{DynamicResource Ui.Product}" Foreground="{DynamicResource Brush.Text}" FontSize="16" FontWeight="Bold" />
+                <TextBlock Text="{DynamicResource Ui.ProductTagline}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" Margin="0,1,0,0" />
+              </StackPanel>
+              <Border Grid.Column="2" Background="{DynamicResource Brush.SurfaceElevated}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                <TextBlock Text="v1.0" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Muted}" />
+              </Border>
+            </Grid>
+          </StackPanel>
+
+          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="0,0,2,0">
+              <TextBlock Text="{DynamicResource Nav.Overview}" Foreground="{DynamicResource Brush.Muted}" FontSize="11" FontWeight="Bold" Margin="10,6,0,6" />
+              <Button Style="{StaticResource Nav.Dashboard}" Command="{Binding NavigateCommand}" CommandParameter="Dashboard">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="Grid24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Dashboard}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+              <Button Style="{StaticResource Nav.Proxies}" Command="{Binding NavigateCommand}" CommandParameter="Proxies">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="Server24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Proxies}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+              <Button Style="{StaticResource Nav.Devices}" Command="{Binding NavigateCommand}" CommandParameter="Devices">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="Phone24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Devices}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+              <Button Style="{StaticResource Nav.Sessions}" Command="{Binding NavigateCommand}" CommandParameter="Sessions">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="History24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Sessions}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+
+              <TextBlock Text="{DynamicResource Nav.Network}" Foreground="{DynamicResource Brush.Muted}" FontSize="11" FontWeight="Bold" Margin="10,18,0,6" />
+              <Button Style="{StaticResource Nav.Routing}" Command="{Binding NavigateCommand}" CommandParameter="Routing">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="BranchFork24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Routing}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+              <Button Style="{StaticResource Nav.Rotation}" Command="{Binding NavigateCommand}" CommandParameter="Rotation">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="ArrowSync24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Rotation}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+              <Button Style="{StaticResource Nav.Networking}" Command="{Binding NavigateCommand}" CommandParameter="Networking">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="NetworkCheck24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="Netstat &amp; Mạng" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+
+              <TextBlock Text="{DynamicResource Nav.System}" Foreground="{DynamicResource Brush.Muted}" FontSize="11" FontWeight="Bold" Margin="10,18,0,6" />
+              <Button Style="{StaticResource Nav.Health}" Command="{Binding NavigateCommand}" CommandParameter="Health">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="HeartPulse24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Health}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+              <Button Style="{StaticResource Nav.Logs}" Command="{Binding NavigateCommand}" CommandParameter="Logs">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Logs}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </ScrollViewer>
+
+          <Border Grid.Row="2"
+                  BorderBrush="{DynamicResource Brush.Border}"
+                  BorderThickness="0,1,0,0"
+                  Padding="0,12,0,0">
+            <StackPanel>
+              <Button Style="{StaticResource Nav.Settings}" Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="Settings24" FontSize="20" Margin="0,0,14,0" />
+                  <TextBlock Text="{DynamicResource Ui.Settings}" VerticalAlignment="Center" FontSize="14" />
+                </StackPanel>
+              </Button>
+              <Border Background="{DynamicResource Brush.SurfaceElevated}" CornerRadius="6" Padding="10,6" Margin="0,8,0,0">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Ellipse Width="8" Height="8" Fill="{DynamicResource Brush.Success}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding ServiceStatus}" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" />
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Border>
+
+      <Grid Grid.Column="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="64" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="34" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="{DynamicResource Brush.Surface}"
+                BorderBrush="{DynamicResource Brush.Border}"
+                BorderThickness="0,0,0,1"
+                Padding="32,0">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding CurrentTabTitle}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource Brush.Text}" />
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+              <Button Style="{StaticResource Button.Icon}"
+                      Command="{Binding ToggleThemeCommand}"
+                      ToolTip="{DynamicResource Ui.ThemeToggle}"
+                      Margin="0,0,8,0">
+                <ui:SymbolIcon Symbol="WeatherSunny24" FontSize="18" Foreground="{DynamicResource Brush.TextSecondary}" />
+              </Button>
+
+              <Button Style="{StaticResource Button.Icon}"
+                      Command="{Binding ToggleLanguageCommand}"
+                      ToolTip="{DynamicResource Ui.LanguageToggle}"
+                      Margin="0,0,14,0">
+                <TextBlock Text="{Binding CurrentLanguage}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" />
+              </Button>
+
+              <Button Style="{StaticResource Button.Secondary}"
+                      Command="{Binding RefreshCommand}"
+                      Margin="0,0,8,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="ArrowClockwise24" FontSize="16" Margin="0,0,8,0" />
+                  <TextBlock Text="{DynamicResource Ui.Refresh}" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+
+              <Button Style="{StaticResource Button.Primary}"
+                      Command="{Binding DiscoverCommand}">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <ui:SymbolIcon Symbol="Flash24" FontSize="16" Margin="0,0,8,0" />
+                  <TextBlock Text="{DynamicResource Ui.Discover}" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+          <ScrollViewer Visibility="{Binding IsDashboardActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Text="{DynamicResource Ui.Overview}"
+                             FontSize="24"
+                             FontWeight="Bold"
+                             Foreground="{DynamicResource Brush.Text}" />
+                  <TextBlock Text="{DynamicResource Ui.OverviewDetail}"
+                             Foreground="{DynamicResource Brush.Muted}"
+                             FontSize="14"
+                             Margin="0,4,0,0" />
+                </StackPanel>
+
+                <Border Grid.Column="1"
+                        Background="{DynamicResource Brush.SurfaceElevated}"
+                        BorderBrush="{DynamicResource Brush.Border}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="4"
+                        VerticalAlignment="Center">
+                  <StackPanel Orientation="Horizontal">
+                    <Button Style="{StaticResource TfBtn.Today}"
+                            Command="{Binding SelectTimeframeCommand}"
+                            CommandParameter="Today"
+                            Content="Hôm nay" />
+                    <Button Style="{StaticResource TfBtn.7Days}"
+                            Command="{Binding SelectTimeframeCommand}"
+                            CommandParameter="7Days"
+                            Content="7 ngày qua" />
+                    <Button Style="{StaticResource TfBtn.30Days}"
+                            Command="{Binding SelectTimeframeCommand}"
+                            CommandParameter="30Days"
+                            Content="30 ngày qua" />
+                  </StackPanel>
+                </Border>
+              </Grid>
+
+              <UniformGrid Columns="4" Margin="0,0,0,20">
+                <Button Style="{StaticResource MetricCardButton}"
+                        Command="{Binding NavigateCommand}"
+                        CommandParameter="Proxies"
+                        Margin="0,0,12,0"
+                        ToolTip="Bấm để mở danh sách Proxy Endpoints">
+                  <StackPanel>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{DynamicResource Ui.ActiveProxies}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" FontWeight="SemiBold" />
+                      <ui:SymbolIcon Grid.Column="1" Symbol="Server24" Foreground="{DynamicResource Brush.Accent}" FontSize="18" />
+                    </Grid>
+                    <TextBlock Text="{Binding ActiveProxies}" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,8,0,0" />
+                    <TextBlock Text="{DynamicResource Ui.ActiveProxiesDetail}" Foreground="{DynamicResource Brush.Success}" FontSize="12" Margin="0,6,0,0" />
+                  </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource MetricCardButton}"
+                        Command="{Binding NavigateCommand}"
+                        CommandParameter="Devices"
+                        Margin="0,0,12,0"
+                        ToolTip="Bấm để mở danh sách Thiết Bị Android ADB">
+                  <StackPanel>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{DynamicResource Ui.ActiveDevices}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" FontWeight="SemiBold" />
+                      <ui:SymbolIcon Grid.Column="1" Symbol="Phone24" Foreground="{DynamicResource Brush.Accent}" FontSize="18" />
+                    </Grid>
+                    <TextBlock Text="{Binding ActiveDevices}" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,8,0,0" />
+                    <TextBlock Text="{DynamicResource Ui.ActiveDevicesDetail}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" Margin="0,6,0,0" />
+                  </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource MetricCardButton}"
+                        Command="{Binding NavigateCommand}"
+                        CommandParameter="Sessions"
+                        Margin="0,0,12,0"
+                        ToolTip="Bấm để xem lịch sử và phiên kết nối mạng">
+                  <StackPanel>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{DynamicResource Ui.RecordedSessions}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" FontWeight="SemiBold" />
+                      <ui:SymbolIcon Grid.Column="1" Symbol="History24" Foreground="{DynamicResource Brush.Accent}" FontSize="18" />
+                    </Grid>
+                    <TextBlock Text="{Binding RecordedSessions}" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,8,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                      <TextBlock Text="Độ tin cậy: " Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+                      <TextBlock Text="{Binding SuccessRate}" Foreground="{DynamicResource Brush.Success}" FontSize="12" FontWeight="Bold" />
+                    </StackPanel>
+                  </StackPanel>
+                </Button>
+
+                <Button Style="{StaticResource MetricCardButton}"
+                        Command="{Binding NavigateCommand}"
+                        CommandParameter="Networking"
+                        ToolTip="Bấm để kiểm tra Netstat và Chẩn đoán mạng">
+                  <StackPanel>
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Text="{DynamicResource Ui.TrafficTotal}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" FontWeight="SemiBold" />
+                      <ui:SymbolIcon Grid.Column="1" Symbol="Globe24" Foreground="{DynamicResource Brush.Accent}" FontSize="18" />
+                    </Grid>
+                    <TextBlock Text="{Binding TrafficTotal}" FontFamily="Consolas, Cascadia Code" FontSize="32" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,8,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                      <TextBlock Text="Đỉnh băng thông: " Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+                      <TextBlock Text="{Binding PeakThroughput}" Foreground="{DynamicResource Brush.Accent}" FontSize="12" FontWeight="Bold" />
+                    </StackPanel>
+                  </StackPanel>
+                </Button>
+              </UniformGrid>
+
+              <Border Style="{StaticResource MetricCard}" Margin="0,0,0,20">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="120" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+
+                  <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                      <ui:SymbolIcon Symbol="ArrowTrendingLines24" Foreground="{DynamicResource Brush.Accent}" Margin="0,0,10,0" FontSize="18" />
+                      <TextBlock Text="{DynamicResource Ui.ThroughputStream}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Brush.Text}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                      <Border Background="{DynamicResource Brush.AccentMuted}" BorderBrush="{DynamicResource Brush.Accent}" BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="{DynamicResource Ui.DownloadSpeed}" FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,6,0" />
+                          <TextBlock Text="{Binding DownloadSpeed}" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Brush.Accent}" />
+                        </StackPanel>
+                      </Border>
+                      <Border Background="{DynamicResource Brush.SuccessMuted}" BorderBrush="{DynamicResource Brush.Success}" BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="{DynamicResource Ui.UploadSpeed}" FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,6,0" />
+                          <TextBlock Text="{Binding UploadSpeed}" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" />
+                        </StackPanel>
+                      </Border>
+                      <Border Background="{DynamicResource Brush.SurfaceElevated}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="6" Padding="10,4">
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="{DynamicResource Ui.LatencyP99}" FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,6,0" />
+                          <TextBlock Text="{Binding LatencyP99}" FontFamily="Consolas" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                        </StackPanel>
+                      </Border>
+                    </StackPanel>
+                  </Grid>
+
+                  <Grid Grid.Row="1" ClipToBounds="True">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="65" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0">
+                      <TextBlock Text="150 Mbps" VerticalAlignment="Top" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.Muted}" HorizontalAlignment="Right" Margin="0,0,8,0" />
+                      <TextBlock Text="100 Mbps" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.Muted}" HorizontalAlignment="Right" Margin="0,-20,8,0" />
+                      <TextBlock Text="50 Mbps" VerticalAlignment="Center" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.Muted}" HorizontalAlignment="Right" Margin="0,20,8,0" />
+                      <TextBlock Text="0 Mbps" VerticalAlignment="Bottom" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.Muted}" HorizontalAlignment="Right" Margin="0,0,8,0" />
+                    </Grid>
+
+                    <Border Grid.Column="1"
+                            BorderBrush="{DynamicResource Brush.Border}"
+                            BorderThickness="1,0,0,1"
+                            ClipToBounds="True">
+                      <Grid>
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="*" />
+                          <RowDefinition Height="*" />
+                          <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Opacity="0.4" />
+                        <Border Grid.Row="1" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Opacity="0.4" />
+
+                        <Viewbox Grid.RowSpan="3" Stretch="Fill">
+                          <Canvas Width="1000" Height="100">
+                            <Polyline Points="0,95 70,90 140,85 210,90 280,75 350,80 420,65 490,70 560,55 630,60 700,45 770,50 840,35 910,40 960,25 1000,30"
+                                      Stroke="{DynamicResource Brush.Accent}"
+                                      StrokeThickness="2.5" />
+                            <Polyline Points="0,98 70,95 140,92 210,95 280,85 350,88 420,80 490,82 560,75 630,78 700,70 770,72 840,65 910,68 960,58 1000,60"
+                                      Stroke="{DynamicResource Brush.Success}"
+                                      StrokeThickness="2"
+                                      StrokeDashArray="4 2" />
+                          </Canvas>
+                        </Viewbox>
+                      </Grid>
+                    </Border>
+                  </Grid>
+
+                  <Grid Grid.Row="2" Margin="65,8,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="-15 phút" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.Muted}" />
+                    <TextBlock Grid.Column="1" Text="-10 phút" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.Muted}" />
+                    <TextBlock Grid.Column="2" Text="-5 phút" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.Muted}" />
+                    <TextBlock Grid.Column="3" Text="Hiện tại" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Accent}" />
+                  </Grid>
+                </Grid>
+              </Border>
+
+              <Border Style="{StaticResource MetricCard}" Margin="0,0,0,20">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <ui:SymbolIcon Symbol="Phone24" Foreground="{DynamicResource Brush.Accent}" Margin="0,0,10,0" FontSize="18" />
+                    <TextBlock Text="{DynamicResource Ui.CellularTelemetry}" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource Brush.Text}" />
+                  </StackPanel>
+
+                  <UniformGrid Grid.Row="1" Columns="4">
+                    <Border Background="{DynamicResource Brush.SurfaceElevated}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,10,0">
+                      <StackPanel>
+                        <TextBlock Text="{DynamicResource Ui.Carrier}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+                        <TextBlock Text="{Binding SelectedDevice.Carrier, TargetNullValue='Chưa chọn thiết bị'}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding SelectedDevice.Network, TargetNullValue='Offline'}" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource Brush.Accent}" Margin="0,2,0,0" />
+                      </StackPanel>
+                    </Border>
+
+                    <Border Background="{DynamicResource Brush.SurfaceElevated}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,10,0">
+                      <StackPanel>
+                        <TextBlock Text="{DynamicResource Ui.SignalStrength}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+                        <TextBlock Text="{Binding SelectedDevice.SignalDbm, TargetNullValue='N/A'}" FontFamily="Consolas" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Brush.Success}" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding SelectedDevice.SignalLevel, TargetNullValue='Không có tín hiệu'}" FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,2,0,0" />
+                      </StackPanel>
+                    </Border>
+
+                    <Border Background="{DynamicResource Brush.SurfaceElevated}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,10,0">
+                      <StackPanel>
+                        <TextBlock Text="{DynamicResource Ui.MonthlyQuota}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+                        <TextBlock Text="{Binding SelectedDevice.MonthlyQuota, TargetNullValue='Không có'}" FontFamily="Consolas" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,0" />
+                        <TextBlock Text="Định mức dữ liệu SIM" FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,2,0,0" />
+                      </StackPanel>
+                    </Border>
+
+                    <Border Background="{DynamicResource Brush.SurfaceElevated}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14">
+                      <StackPanel>
+                        <TextBlock Text="{DynamicResource Ui.CurrentWanIp}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+                        <TextBlock Text="{Binding SelectedDevice.WanIp, TargetNullValue='0.0.0.0'}" FontFamily="Consolas" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Brush.Accent}" Margin="0,4,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                          <TextBlock Text="APN: " FontSize="12" Foreground="{DynamicResource Brush.Muted}" />
+                          <TextBlock Text="{Binding SelectedDevice.Apn, TargetNullValue='N/A'}" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource Brush.TextSecondary}" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Border>
+                  </UniformGrid>
+                </Grid>
+              </Border>
+
+              <Border Style="{StaticResource TableCard}">
+                <DockPanel>
+                  <Border DockPanel.Dock="Top" Background="{DynamicResource Brush.SurfaceElevated}" Padding="16,12" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+
+                      <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource DashTableBtn.Devices}"
+                                Command="{Binding SelectDashboardTableTabCommand}"
+                                CommandParameter="Devices"
+                                Margin="0,0,4,0">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Phone24" FontSize="16" Margin="0,0,6,0" />
+                            <TextBlock Text="Thiết Bị Di Động ADB (" />
+                            <TextBlock Text="{Binding Devices.Count}" FontWeight="Bold" />
+                            <TextBlock Text=")" />
+                          </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource DashTableBtn.Endpoints}"
+                                Command="{Binding SelectDashboardTableTabCommand}"
+                                CommandParameter="Endpoints">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Server24" FontSize="16" Margin="0,0,6,0" />
+                            <TextBlock Text="Proxy Endpoints Đang Chạy (" />
+                            <TextBlock Text="{Binding Endpoints.Count}" FontWeight="Bold" />
+                            <TextBlock Text=")" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+
+                      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource Button.Ghost}"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="{Binding SelectedDashboardTableTab}"
+                                Padding="10,4"
+                                Height="32">
+                          <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Mở Trang Quản Lý Chi Tiết" FontSize="12.5" Margin="0,0,6,0" />
+                            <ui:SymbolIcon Symbol="ArrowRight24" FontSize="14" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+
+                  <Grid Visibility="{Binding IsDashboardTableDevices, Converter={StaticResource VisibleWhenTrue}}">
+                    <DataGrid ItemsSource="{Binding Devices}"
+                              SelectedItem="{Binding SelectedDevice}"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              MinHeight="260"
+                              Visibility="{Binding HasDevices, Converter={StaticResource VisibleWhenTrue}}">
+                      <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Device}" Binding="{Binding Name}" Width="2*" MinWidth="180" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.AdbSerial}" Binding="{Binding AdbSerial}" Width="150" />
+                        <DataGridTemplateColumn Header="{DynamicResource Ui.Col.NodeState}" Width="130">
+                          <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                              <Border Style="{StaticResource Badge.Success}">
+                                <StackPanel Orientation="Horizontal">
+                                  <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                  <TextBlock Text="{Binding ActualState}" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                                </StackPanel>
+                              </Border>
+                            </DataTemplate>
+                          </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Carrier}" Binding="{Binding Carrier}" Width="130" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Network}" Binding="{Binding Network}" Width="120" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Signal}" Binding="{Binding SignalDbm}" Width="100" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Battery}" Binding="{Binding Battery}" Width="85" />
+                        <DataGridTextColumn Header="WAN IP" Binding="{Binding WanIp}" Width="140" />
+                      </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Visibility="{Binding HasNoDevices, Converter={StaticResource VisibleWhenTrue}}" Padding="32" MinHeight="220">
+                      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Phone24" FontSize="36" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,12" HorizontalAlignment="Center" />
+                        <TextBlock Text="Chưa phát hiện thiết bị Android ADB nào đang kết nối" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Vui lòng cắm điện thoại Android qua cổng USB, bật chế độ Gỡ Lỗi USB (USB Debugging) và bấm nút bên dưới." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,16" HorizontalAlignment="Center" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding DiscoverCommand}" HorizontalAlignment="Center">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Flash24" FontSize="16" Margin="0,0,8,0" />
+                            <TextBlock Text="Quét Lại Thiết Bị ADB" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+
+                  <Grid Visibility="{Binding IsDashboardTableEndpoints, Converter={StaticResource VisibleWhenTrue}}">
+                    <DataGrid ItemsSource="{Binding Endpoints}"
+                              SelectedItem="{Binding SelectedEndpointForExport}"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              MinHeight="260"
+                              Visibility="{Binding HasEndpoints, Converter={StaticResource VisibleWhenTrue}}">
+                      <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.ProxyName}" Binding="{Binding Name}" Width="2*" MinWidth="180" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.BindAddress}" Binding="{Binding Address}" Width="140" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Port}" Binding="{Binding Port}" Width="85" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Protocol}" Binding="{Binding Protocol}" Width="95" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.AssignedNode}" Binding="{Binding Device}" Width="150" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Latency}" Binding="{Binding Latency}" Width="100" />
+                        <DataGridTemplateColumn Header="{DynamicResource Ui.Col.Status}" Width="115">
+                          <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                              <Border Style="{StaticResource Badge.Success}">
+                                <StackPanel Orientation="Horizontal">
+                                  <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                  <TextBlock Text="RUNNING" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                                </StackPanel>
+                              </Border>
+                            </DataTemplate>
+                          </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                      </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Visibility="{Binding HasNoEndpoints, Converter={StaticResource VisibleWhenTrue}}" Padding="32" MinHeight="220">
+                      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Server24" FontSize="36" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,12" HorizontalAlignment="Center" />
+                        <TextBlock Text="Chưa có Proxy Endpoint nào được khởi tạo" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Tạo một Proxy Endpoint mới để bắt đầu định tuyến lưu lượng qua thiết bị di động 4G/5G." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,16" HorizontalAlignment="Center" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding OpenCreateProxyDialogCommand}" HorizontalAlignment="Center">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Add24" FontSize="16" Margin="0,0,8,0" />
+                            <TextBlock Text="Tạo Mới Proxy Endpoint" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </DockPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+
+          <ScrollViewer Visibility="{Binding IsProxiesActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Text="{DynamicResource Ui.Title.Proxies}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBlock Text="{DynamicResource Ui.Subtitle.Proxies}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,0" />
+                </StackPanel>
+                <Button Grid.Column="1" Style="{StaticResource Button.Primary}" Command="{Binding OpenCreateProxyDialogCommand}">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="Add24" FontSize="16" Margin="0,0,8,0" />
+                    <TextBlock Text="{DynamicResource Ui.CreateProxy}" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+
+              <Border Style="{StaticResource MetricCard}" Margin="0,0,0,18">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                      <ui:SymbolIcon Symbol="Key24" Foreground="{DynamicResource Brush.Accent}" Margin="0,0,8,0" FontSize="18" />
+                      <TextBlock Text="Trình Xuất Chuỗi Proxy &amp; Xác Thực (Proxy Credentials &amp; Quick Connect)" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource Brush.Text}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                      <Button Style="{StaticResource Button.Secondary}"
+                              Height="32"
+                              Padding="10,4"
+                              Margin="0,0,6,0"
+                              Command="{Binding SelectCredentialFormatCommand}"
+                              CommandParameter="Raw"
+                              Content="IP:Port" />
+                      <Button Style="{StaticResource Button.Secondary}"
+                              Height="32"
+                              Padding="10,4"
+                              Margin="0,0,6,0"
+                              Command="{Binding SelectCredentialFormatCommand}"
+                              CommandParameter="Curl"
+                              Content="cURL" />
+                      <Button Style="{StaticResource Button.Secondary}"
+                              Height="32"
+                              Padding="10,4"
+                              Command="{Binding SelectCredentialFormatCommand}"
+                              CommandParameter="Python"
+                              Content="Python Requests" />
+                    </StackPanel>
+                  </Grid>
+
+                  <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding GeneratedCredentialString, Mode=OneWay}"
+                             FontFamily="Consolas"
+                             FontSize="13"
+                             IsReadOnly="True"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,10,0" />
+                    <Button Grid.Column="1"
+                            Style="{StaticResource Button.Primary}"
+                            Command="{Binding CopyCredentialCommand}"
+                            Margin="0,0,8,0">
+                      <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Copy24" FontSize="16" Margin="0,0,6,0" />
+                        <TextBlock Text="Sao Chép" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2"
+                            Style="{StaticResource Button.Secondary}"
+                            Command="{Binding TestProxyCommand}">
+                      <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="NetworkCheck24" FontSize="16" Margin="0,0,6,0" />
+                        <TextBlock Text="Test Ping" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Border>
+
+              <Border Style="{StaticResource TableCard}">
+                <Grid>
+                  <DataGrid ItemsSource="{Binding Endpoints}"
+                            SelectedItem="{Binding SelectedEndpointForExport}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            MinHeight="380"
+                            Visibility="{Binding HasEndpoints, Converter={StaticResource VisibleWhenTrue}}">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.ProxyName}" Binding="{Binding Name}" Width="2*" MinWidth="180" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.BindAddress}" Binding="{Binding Address}" Width="130" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Port}" Binding="{Binding Port}" Width="85" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Protocol}" Binding="{Binding Protocol}" Width="100" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.AssignedNode}" Binding="{Binding Device}" Width="150" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Latency}" Binding="{Binding Latency}" Width="100" />
+                      <DataGridTemplateColumn Header="{DynamicResource Ui.Col.Status}" Width="115">
+                        <DataGridTemplateColumn.CellTemplate>
+                          <DataTemplate>
+                            <Border Style="{StaticResource Badge.Success}">
+                              <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="RUNNING" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                              </StackPanel>
+                            </Border>
+                            </DataTemplate>
+                          </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{DynamicResource Ui.Col.Actions}" Width="110">
+                          <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                              <Button Style="{StaticResource Button.Danger}"
+                                      Command="{Binding DataContext.ToggleProxyCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      CommandParameter="{Binding}"
+                                      Height="30"
+                                      Padding="8,2"
+                                      HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                  <ui:SymbolIcon Symbol="Stop24" FontSize="13" Margin="0,0,4,0" />
+                                  <TextBlock Text="Dừng" VerticalAlignment="Center" FontSize="12" />
+                                </StackPanel>
+                              </Button>
+                            </DataTemplate>
+                          </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                      </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Visibility="{Binding HasNoEndpoints, Converter={StaticResource VisibleWhenTrue}}" Padding="32" MinHeight="300">
+                      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Server24" FontSize="42" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,14" HorizontalAlignment="Center" />
+                        <TextBlock Text="Chưa có Proxy Endpoint nào được cấu hình" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Khởi tạo Proxy Endpoint đầu tiên để nhận kết nối SOCKS5 hoặc HTTP trên cổng cục bộ." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,6,0,18" HorizontalAlignment="Center" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding OpenCreateProxyDialogCommand}" HorizontalAlignment="Center">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Add24" FontSize="16" Margin="0,0,8,0" />
+                            <TextBlock Text="Tạo Proxy Endpoint Mới" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+
+          <ScrollViewer Visibility="{Binding IsDevicesActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Text="{DynamicResource Ui.Title.Devices}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBlock Text="{DynamicResource Ui.Subtitle.Devices}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                  <Button Style="{StaticResource Button.Secondary}" Command="{Binding OpenRegisterDeviceDialogCommand}" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                      <ui:SymbolIcon Symbol="Add24" FontSize="16" Margin="0,0,8,0" />
+                      <TextBlock Text="{DynamicResource Ui.RegisterDevice}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                  <Button Style="{StaticResource Button.Primary}" Command="{Binding DiscoverCommand}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                      <ui:SymbolIcon Symbol="Flash24" FontSize="16" Margin="0,0,8,0" />
+                      <TextBlock Text="{DynamicResource Ui.Discover}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                </StackPanel>
+              </Grid>
+
+              <Border Style="{StaticResource TableCard}">
+                <Grid>
+                  <DataGrid ItemsSource="{Binding Devices}"
+                            SelectedItem="{Binding SelectedDevice}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            MinHeight="460"
+                            Visibility="{Binding HasDevices, Converter={StaticResource VisibleWhenTrue}}">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Device}" Binding="{Binding Name}" Width="2*" MinWidth="180" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.AdbSerial}" Binding="{Binding AdbSerial}" Width="160" />
+                      <DataGridTemplateColumn Header="{DynamicResource Ui.Col.NodeState}" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                          <DataTemplate>
+                            <Border Style="{StaticResource Badge.Success}">
+                              <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ActualState}" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                              </StackPanel>
+                            </Border>
+                            </DataTemplate>
+                          </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Carrier}" Binding="{Binding Carrier}" Width="130" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Network}" Binding="{Binding Network}" Width="130" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Signal}" Binding="{Binding SignalDbm}" Width="100" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Battery}" Binding="{Binding Battery}" Width="85" />
+                        <DataGridTextColumn Header="{DynamicResource Ui.Col.Quota}" Binding="{Binding MonthlyQuota}" Width="140" />
+                        <DataGridTemplateColumn Header="{DynamicResource Ui.Col.Actions}" Width="110">
+                          <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                              <Button Style="{StaticResource Button.Secondary}"
+                                      Height="30"
+                                      Padding="8,2"
+                                      Command="{Binding DataContext.ToggleDeviceCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                      CommandParameter="{Binding}"
+                                      HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                  <ui:SymbolIcon Symbol="Power24" FontSize="13" Margin="0,0,4,0" />
+                                  <TextBlock Text="Node On" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                              </Button>
+                            </DataTemplate>
+                          </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                      </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Visibility="{Binding HasNoDevices, Converter={StaticResource VisibleWhenTrue}}" Padding="32" MinHeight="360">
+                      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Phone24" FontSize="42" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,14" HorizontalAlignment="Center" />
+                        <TextBlock Text="Chưa phát hiện điện thoại Android nào trong hệ thống" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Kết nối điện thoại Android qua cổng USB và bật 'USB Debugging'. Hệ thống sẽ tự động nhận diện và nạp SIM di động." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,6,0,18" HorizontalAlignment="Center" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding DiscoverCommand}" HorizontalAlignment="Center">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Flash24" FontSize="16" Margin="0,0,8,0" />
+                            <TextBlock Text="Quét Thiết Bị ADB Ngay" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+
+          <ScrollViewer Visibility="{Binding IsSessionsActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Text="{DynamicResource Ui.Title.Sessions}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBlock Text="{DynamicResource Ui.Subtitle.Sessions}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,0" />
+                </StackPanel>
+              </Grid>
+
+              <Border Style="{StaticResource TableCard}">
+                <Grid>
+                  <DataGrid ItemsSource="{Binding ActiveSessions}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            MinHeight="460"
+                            Visibility="{Binding HasSessions, Converter={StaticResource VisibleWhenTrue}}">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.SessionId}" Binding="{Binding Id}" Width="120" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.ProxyName}" Binding="{Binding Proxy}" Width="160" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.ClientIp}" Binding="{Binding ClientIp}" Width="140" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Target}" Binding="{Binding Target}" Width="2*" MinWidth="180" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Protocol}" Binding="{Binding Protocol}" Width="100" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Duration}" Binding="{Binding Duration}" Width="110" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Traffic}" Binding="{Binding Traffic}" Width="120" />
+                    </DataGrid.Columns>
+                  </DataGrid>
+
+                  <Border Visibility="{Binding HasNoSessions, Converter={StaticResource VisibleWhenTrue}}" Padding="32" MinHeight="300">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <ui:SymbolIcon Symbol="History24" FontSize="42" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,14" HorizontalAlignment="Center" />
+                      <TextBlock Text="Chưa có phiên kết nối proxy nào được ghi nhận" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" HorizontalAlignment="Center" />
+                      <TextBlock Text="Khi client kết nối qua cổng proxy, các session TCP/TLS và lưu lượng trao đổi sẽ hiển thị tại đây theo thời gian thực." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+
+          <ScrollViewer Visibility="{Binding IsRoutingActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Text="{DynamicResource Ui.Title.Routing}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBlock Text="Trung tâm điều phối lưu lượng, phân bổ tải di động và thiết lập Sticky IP." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,0" />
+                </StackPanel>
+                <Button Grid.Column="1" Style="{StaticResource Button.Primary}" Command="{Binding OpenCreatePoolDialogCommand}">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="Add24" FontSize="16" Margin="0,0,8,0" />
+                    <TextBlock Text="{DynamicResource Ui.CreatePool}" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+
+              <Border Style="{StaticResource MetricCard}" Margin="0,0,0,20">
+                <StackPanel>
+                  <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                      <TextBlock Text="Thiết Lập Chiến Lược Điều Phối Tải (Active Routing Strategy)" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource Brush.Text}" />
+                      <TextBlock Text="Chọn thuật toán phân phối kết nối client tới các node 4G/5G" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,2,0,0" />
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Style="{StaticResource Badge.Accent}">
+                      <TextBlock Text="{Binding RoutingSaveStatus}" FontFamily="Consolas" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource Brush.Accent}" />
+                    </Border>
+                  </Grid>
+
+                  <UniformGrid Columns="3" Margin="0,0,0,18">
+                    <Button Style="{StaticResource StrategyBtn.RoundRobin}"
+                            Command="{Binding SelectStrategyCommand}"
+                            CommandParameter="RoundRobin"
+                            Height="Auto"
+                            Padding="16,14"
+                            Margin="0,0,10,0"
+                            HorizontalContentAlignment="Left">
+                      <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                          <ui:SymbolIcon Symbol="ArrowSync24" FontSize="18" Margin="0,0,8,0" Foreground="{DynamicResource Brush.Accent}" />
+                          <TextBlock Text="Round-Robin Balance" FontWeight="Bold" FontSize="15" />
+                        </StackPanel>
+                        <TextBlock Text="Xoay vòng tải tuần tự qua từng thiết bị di động có sẵn." FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource StrategyBtn.Sticky}"
+                            Command="{Binding SelectStrategyCommand}"
+                            CommandParameter="StickySession"
+                            Height="Auto"
+                            Padding="16,14"
+                            Margin="0,0,10,0"
+                            HorizontalContentAlignment="Left">
+                      <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                          <ui:SymbolIcon Symbol="BranchFork24" FontSize="18" Margin="0,0,8,0" Foreground="{DynamicResource Brush.Accent}" />
+                          <TextBlock Text="Sticky Session Routing" FontWeight="Bold" FontSize="15" />
+                        </StackPanel>
+                        <TextBlock Text="Giữ nguyên cùng 1 IP di động cho 1 Client IP trong suốt TTL." FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Button>
+
+                    <Button Style="{StaticResource StrategyBtn.Least}"
+                            Command="{Binding SelectStrategyCommand}"
+                            CommandParameter="LeastConnections"
+                            Height="Auto"
+                            Padding="16,14"
+                            HorizontalContentAlignment="Left">
+                      <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                          <ui:SymbolIcon Symbol="Pulse24" FontSize="18" Margin="0,0,8,0" Foreground="{DynamicResource Brush.Accent}" />
+                          <TextBlock Text="Least Connections" FontWeight="Bold" FontSize="15" />
+                        </StackPanel>
+                        <TextBlock Text="Điều phối request tới node di động có ít kết nối mở nhất." FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Button>
+                  </UniformGrid>
+
+                  <Border Background="{DynamicResource Brush.SurfaceElevated}" CornerRadius="8" Padding="18" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1">
+                    <Grid>
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                      </Grid.RowDefinitions>
+                      <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                          <TextBlock Text="Thời Gian Duy Trì Phiên Cố Định (Sticky Session TTL)" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}" />
+                          <TextBlock Text="Sau khoảng thời gian này không có hoạt động, IP sẽ tự động xoay phiên mới." FontSize="12" Foreground="{DynamicResource Brush.Muted}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding RoutingStickyTtl}" FontFamily="Consolas" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource Brush.Accent}" />
+                          <TextBlock Text=" giây" FontSize="14" Foreground="{DynamicResource Brush.Text}" Margin="4,0,0,0" />
+                        </StackPanel>
+                      </Grid>
+
+                      <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                          <Button Style="{StaticResource Button.Secondary}" Command="{Binding SetStickyTtlCommand}" CommandParameter="60" Content="1 Phút (60s)" Margin="0,0,6,0" />
+                          <Button Style="{StaticResource Button.Secondary}" Command="{Binding SetStickyTtlCommand}" CommandParameter="300" Content="5 Phút (300s)" Margin="0,0,6,0" />
+                          <Button Style="{StaticResource Button.Secondary}" Command="{Binding SetStickyTtlCommand}" CommandParameter="600" Content="10 Phút (600s)" Margin="0,0,6,0" />
+                          <Button Style="{StaticResource Button.Secondary}" Command="{Binding SetStickyTtlCommand}" CommandParameter="1800" Content="30 Phút (1800s)" Margin="0,0,6,0" />
+                          <Button Style="{StaticResource Button.Secondary}" Command="{Binding SetStickyTtlCommand}" CommandParameter="3600" Content="60 Phút (3600s)" />
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Style="{StaticResource Button.Primary}"
+                                Command="{Binding SaveRoutingConfigCommand}">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Checkmark24" FontSize="16" Margin="0,0,6,0" />
+                            <TextBlock Text="Lưu &amp; Áp Dụng Cấu Hình" VerticalAlignment="Center" />
+                          </StackPanel>
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Border>
+                </StackPanel>
+              </Border>
+
+              <Border Style="{StaticResource TableCard}">
+                <DataGrid ItemsSource="{Binding Pools}" IsReadOnly="True" AutoGenerateColumns="False" MinHeight="260">
+                  <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tên Pool" Binding="{Binding Name}" Width="2*" MinWidth="180" />
+                    <DataGridTextColumn Header="Chiến Lược (Strategy)" Binding="{Binding Strategy}" Width="200" />
+                    <DataGridTextColumn Header="Sticky TTL (s)" Binding="{Binding StickyTtlSeconds}" Width="140" />
+                    <DataGridTextColumn Header="Số Thiết Bị (Members)" Binding="{Binding MemberCount}" Width="160" />
+                    <DataGridTemplateColumn Header="Trạng Thái" Width="130">
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <Border Style="{StaticResource Badge.Success}">
+                            <StackPanel Orientation="Horizontal">
+                              <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                              <TextBlock Text="ACTIVE" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                            </StackPanel>
+                          </Border>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                  </DataGrid.Columns>
+                </DataGrid>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+
+          <ScrollViewer Visibility="{Binding IsRotationActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Text="{DynamicResource Ui.Title.Rotation}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBlock Text="{DynamicResource Ui.Subtitle.Rotation}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,0" />
+                </StackPanel>
+                <Button Grid.Column="1" Style="{StaticResource Button.Primary}" Command="{Binding RotateNowCommand}">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Margin="0,0,8,0" />
+                    <TextBlock Text="{DynamicResource Ui.RotateNow}" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+
+              <Border Style="{StaticResource TableCard}">
+                <Grid>
+                  <DataGrid ItemsSource="{Binding RotationHistory}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            MinHeight="420"
+                            Visibility="{Binding HasRotations, Converter={StaticResource VisibleWhenTrue}}">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.NewIp}" Binding="{Binding CurrentIp}" Width="180" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.PrevIp}" Binding="{Binding PreviousIp}" Width="180" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Time}" Binding="{Binding ChangedAt}" Width="140" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Trigger}" Binding="{Binding TriggeredBy}" Width="2*" MinWidth="180" />
+                      <DataGridTextColumn Header="{DynamicResource Ui.Col.Duration}" Binding="{Binding Duration}" Width="120" />
+                      <DataGridTemplateColumn Header="{DynamicResource Ui.Col.Result}" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                          <DataTemplate>
+                            <Border Style="{StaticResource Badge.Success}">
+                              <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Status}" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                              </StackPanel>
+                            </Border>
+                            </DataTemplate>
+                          </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                      </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Visibility="{Binding HasNoRotations, Converter={StaticResource VisibleWhenTrue}}" Padding="32" MinHeight="300">
+                      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="ArrowSync24" FontSize="42" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,14" HorizontalAlignment="Center" />
+                        <TextBlock Text="Chưa có lịch sử xoay IP di động nào" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" HorizontalAlignment="Center" />
+                        <TextBlock Text="Nhấn nút [Kích Hoạt Xoay IP Ngay] để gửi lệnh reset kết nối cellular qua ADB và nhận dải IP WAN mới." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,6,0,18" HorizontalAlignment="Center" />
+                        <Button Style="{StaticResource Button.Primary}" Command="{Binding RotateNowCommand}" HorizontalAlignment="Center">
+                          <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Margin="0,0,8,0" />
+                            <TextBlock Text="Kích Hoạt Xoay IP Ngay" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+
+          <ScrollViewer Visibility="{Binding IsNetworkingActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <Grid Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                  <TextBlock Text="Chẩn Đoán Mạng &amp; Bảng Netstat TCP Sockets" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBlock Text="Theo dõi các socket kết nối TCP đang mở và kiểm tra độ trễ mạng ICMP/TCP thời gian thực." Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,0" />
+                </StackPanel>
+                <Button Grid.Column="1" Style="{StaticResource Button.Secondary}" Command="{Binding RefreshNetworkingCommand}">
+                  <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="ArrowClockwise24" FontSize="16" Margin="0,0,8,0" />
+                    <TextBlock Text="Làm Mới Mạng" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+
+              <Border Style="{StaticResource MetricCard}" Margin="0,0,0,20">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
+                    <ui:SymbolIcon Symbol="NetworkCheck24" Foreground="{DynamicResource Brush.Accent}" Margin="0,0,10,0" FontSize="18" />
+                    <TextBlock Text="Công Cụ Kiểm Tra Độ Trễ ICMP Ping (Network Diagnostics Tool)" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource Brush.Text}" />
+                  </StackPanel>
+
+                  <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="140" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <TextBox Grid.Column="0"
+                               Text="{Binding PingTargetHost, UpdateSourceTrigger=PropertyChanged}"
+                               Margin="0,0,10,0"
+                               VerticalContentAlignment="Center" />
+                      <TextBox Grid.Column="1"
+                               Text="{Binding PingTimeoutMs, UpdateSourceTrigger=PropertyChanged}"
+                               Margin="0,0,10,0"
+                               VerticalContentAlignment="Center" />
+                      <Button Grid.Column="2"
+                              Style="{StaticResource Button.Primary}"
+                              Command="{Binding RunPingCommand}"
+                              IsEnabled="{Binding IsPingRunning, Converter={StaticResource VisibleWhenTrue}, ConverterParameter=Inverse}">
+                        <StackPanel Orientation="Horizontal">
+                          <ui:SymbolIcon Symbol="Flash24" FontSize="16" Margin="0,0,8,0" />
+                          <TextBlock Text="Kiểm Tra Ping" VerticalAlignment="Center" />
+                        </StackPanel>
+                      </Button>
+                    </Grid>
+                    <Border Grid.Row="1" Background="{DynamicResource Brush.SurfaceElevated}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="6" Padding="12,10">
+                      <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Info24" FontSize="16" Foreground="{DynamicResource Brush.Accent}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding PingResultSummary}" FontFamily="Consolas" FontSize="12.5" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Grid>
+              </Border>
+
+              <Border Style="{StaticResource MetricCard}" Margin="0,0,0,20">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                    <ui:SymbolIcon Symbol="Router24" Foreground="{DynamicResource Brush.Accent}" Margin="0,0,10,0" FontSize="18" />
+                    <TextBlock Text="Danh Sách Card Mạng Hệ Thống (Network Adapters)" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource Brush.Text}" />
+                  </StackPanel>
+
+                  <DataGrid ItemsSource="{Binding NetworkInterfaces}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            MinHeight="180">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="Tên Giao Diện" Binding="{Binding Name}" Width="160" />
+                      <DataGridTextColumn Header="Mô Tả Card Mạng" Binding="{Binding Description}" Width="2*" MinWidth="180" />
+                      <DataGridTextColumn Header="Loại (Type)" Binding="{Binding Type}" Width="120" />
+                      <DataGridTemplateColumn Header="Trạng Thái" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                          <DataTemplate>
+                            <Border Style="{StaticResource Badge.Success}">
+                              <TextBlock Text="{Binding Status}" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" HorizontalAlignment="Center" />
+                            </Border>
+                          </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                      </DataGridTemplateColumn>
+                      <DataGridTextColumn Header="Tốc Độ (Speed)" Binding="{Binding SpeedMbps, StringFormat='{}{0} Mbps'}" Width="120" />
+                      <DataGridTextColumn Header="Địa Chỉ IP" Binding="{Binding IpAddresses}" Width="220" />
+                    </DataGrid.Columns>
+                  </DataGrid>
+                </StackPanel>
+              </Border>
+
+              <Border Style="{StaticResource TableCard}">
+                <DockPanel>
+                  <Border DockPanel.Dock="Top" Background="{DynamicResource Brush.SurfaceElevated}" Padding="16,12" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="BroadActivityFeed24" Foreground="{DynamicResource Brush.Accent}" Margin="0,0,8,0" FontSize="18" />
+                        <TextBlock Text="Bảng Kết Nối TCP Hoạt Động (Netstat Active TCP Sockets)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Text="{Binding NetstatConnections.Count, StringFormat='Tổng: {0} sockets'}" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" />
+                    </Grid>
+                  </Border>
+
+                  <DataGrid ItemsSource="{Binding NetstatConnections}"
+                            IsReadOnly="True"
+                            AutoGenerateColumns="False"
+                            MinHeight="360">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="Địa Chỉ Cục Bộ (Local Address)" Binding="{Binding LocalAddress}" Width="200" />
+                      <DataGridTextColumn Header="Cổng Cục Bộ (Port)" Binding="{Binding LocalPort}" Width="140" />
+                      <DataGridTextColumn Header="Địa Chỉ Đích (Remote Address)" Binding="{Binding RemoteAddress}" Width="200" />
+                      <DataGridTextColumn Header="Cổng Đích (Remote Port)" Binding="{Binding RemotePort}" Width="140" />
+                      <DataGridTemplateColumn Header="Trạng Thái TCP (State)" Width="150">
+                        <DataGridTemplateColumn.CellTemplate>
+                          <DataTemplate>
+                            <Border Style="{StaticResource Badge.Accent}">
+                              <TextBlock Text="{Binding State}" FontFamily="Consolas" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Accent}" HorizontalAlignment="Center" />
+                            </Border>
+                          </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                      </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                  </DataGrid>
+                </DockPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+
+          <ScrollViewer Visibility="{Binding IsHealthActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <TextBlock Text="{DynamicResource Ui.Title.Health}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+              <TextBlock Text="{DynamicResource Ui.Subtitle.Health}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,20" />
+
+              <StackPanel>
+                <Border Style="{StaticResource MetricCard}" Margin="0,0,0,12">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Control Plane Local Service Daemon (http://127.0.0.1:5080/)" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource Brush.Text}" />
+                      <TextBlock Text="Dịch vụ lõi HTTP API, MediatR handlers và SQLite database trạng thái hạ tầng." FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Style="{StaticResource Badge.Success}">
+                      <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock Text="HEALTHY" FontFamily="Consolas" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+
+                <Border Style="{StaticResource MetricCard}" Margin="0,0,0,12">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="ADB Host Controller &amp; Loopback Port Forwarding" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource Brush.Text}" />
+                      <TextBlock Text="Tiến trình nhận diện thiết bị và chuyển tiếp cổng loopback 18080 - 18082." FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Style="{StaticResource Badge.Success}">
+                      <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock Text="READY" FontFamily="Consolas" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+
+                <Border Style="{StaticResource MetricCard}" Margin="0,0,0,12">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Cellular Fail-Closed Security Policy" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource Brush.Text}" />
+                      <TextBlock Text="Cấm tuyệt đối fallback ra mạng Ethernet hoặc Wi-Fi máy tính khi mất kết nối di động." FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Style="{StaticResource Badge.Accent}">
+                      <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Accent}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock Text="ENFORCED" FontFamily="Consolas" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource Brush.Accent}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+
+                <Border Style="{StaticResource MetricCard}">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="DNS Leak Prevention &amp; Remote Resolver" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource Brush.Text}" />
+                      <TextBlock Text="Tất cả truy vấn tên miền DNS được giải quyết trực tiếp trên node di động Android qua mạng cellular." FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Style="{StaticResource Badge.Success}">
+                      <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="6" Height="6" Fill="{DynamicResource Brush.Success}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock Text="SECURE" FontFamily="Consolas" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource Brush.Success}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </StackPanel>
+          </ScrollViewer>
+
+          <Grid Visibility="{Binding IsLogsActive, Converter={StaticResource VisibleWhenTrue}}" Margin="32,24,32,24">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+              <TextBlock Text="{DynamicResource Ui.Title.Logs}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+              <TextBlock Text="{DynamicResource Ui.Subtitle.Logs}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,0" />
+            </StackPanel>
+            <Border Grid.Row="1"
+                    Background="{DynamicResource Brush.Surface}"
+                    BorderBrush="{DynamicResource Brush.Border}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+              <ListBox ItemsSource="{Binding SystemLogs}"
+                       Background="Transparent"
+                       BorderThickness="0"
+                       FontFamily="Consolas, Cascadia Code">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Grid Margin="0,4">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Grid.Column="0" Text="{Binding Timestamp}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+                      <TextBlock Grid.Column="1" Text="{Binding Level}" FontWeight="Bold" Foreground="{DynamicResource Brush.Accent}" FontSize="12" />
+                      <TextBlock Grid.Column="2" Text="{Binding Message}" Foreground="{DynamicResource Brush.Text}" FontSize="12" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Border>
+          </Grid>
+
+          <ScrollViewer Visibility="{Binding IsSettingsActive, Converter={StaticResource VisibleWhenTrue}}" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,24,32,24">
+              <TextBlock Text="{DynamicResource Ui.Title.Settings}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+              <TextBlock Text="{DynamicResource Ui.Subtitle.Settings}" Foreground="{DynamicResource Brush.Muted}" FontSize="13" Margin="0,4,0,20" />
+
+              <Border Style="{StaticResource MetricCard}">
+                <StackPanel>
+                  <TextBlock Text="Địa chỉ Service API Control Plane" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBox Text="http://127.0.0.1:5080/"
+                           FontFamily="Consolas"
+                           Margin="0,8,0,18"
+                           IsReadOnly="True" />
+
+                  <TextBlock Text="Địa chỉ Loopback Interface" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBox Text="127.0.0.1"
+                           FontFamily="Consolas"
+                           Margin="0,8,0,18"
+                           IsReadOnly="True" />
+
+                  <TextBlock Text="Dải Cổng Proxy Mặc Định" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}" />
+                  <TextBox Text="1080 - 1099"
+                           FontFamily="Consolas"
+                           Margin="0,8,0,18"
+                           IsReadOnly="True" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+
+          <Grid Visibility="{Binding IsCreateProxyDialogOpen, Converter={StaticResource VisibleWhenTrue}}"
+                Background="#80000000">
+            <Border Width="480"
+                    Background="{DynamicResource Brush.Surface}"
+                    BorderBrush="{DynamicResource Brush.Border}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource Radius.Modal}"
+                    Padding="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+              <StackPanel>
+                <TextBlock Text="Tạo Proxy Endpoint Mới" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,16" />
+
+                <TextBlock Text="Tên Proxy" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewProxyName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14" />
+
+                <TextBlock Text="Cổng Port Listener" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewProxyPort, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14" />
+
+                <TextBlock Text="Giao Thức (Protocol)" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewProxyProtocol, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" />
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Button Grid.Column="0"
+                          Style="{StaticResource Button.Secondary}"
+                          Command="{Binding CloseCreateProxyDialogCommand}"
+                          Content="Hủy Bỏ"
+                          Margin="0,0,6,0" />
+                  <Button Grid.Column="1"
+                          Style="{StaticResource Button.Primary}"
+                          Command="{Binding ConfirmCreateProxyCommand}"
+                          Content="Tạo Proxy"
+                          Margin="6,0,0,0" />
+                </Grid>
+              </StackPanel>
+            </Border>
+          </Grid>
+
+          <Grid Visibility="{Binding IsRegisterDeviceDialogOpen, Converter={StaticResource VisibleWhenTrue}}"
+                Background="#80000000">
+            <Border Width="480"
+                    Background="{DynamicResource Brush.Surface}"
+                    BorderBrush="{DynamicResource Brush.Border}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource Radius.Modal}"
+                    Padding="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+              <StackPanel>
+                <TextBlock Text="Đăng Ký Thiết Bị Android Mới" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,16" />
+
+                <TextBlock Text="Tên / Model Thiết Bị" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewDeviceName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14" />
+
+                <TextBlock Text="ADB Serial Number" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewDeviceSerial, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" />
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Button Grid.Column="0"
+                          Style="{StaticResource Button.Secondary}"
+                          Command="{Binding CloseRegisterDeviceDialogCommand}"
+                          Content="Hủy Bỏ"
+                          Margin="0,0,6,0" />
+                  <Button Grid.Column="1"
+                          Style="{StaticResource Button.Primary}"
+                          Command="{Binding ConfirmRegisterDeviceCommand}"
+                          Content="Đăng Ký Node"
+                          Margin="6,0,0,0" />
+                </Grid>
+              </StackPanel>
+            </Border>
+          </Grid>
+
+          <Grid Visibility="{Binding IsCreatePoolDialogOpen, Converter={StaticResource VisibleWhenTrue}}"
+                Background="#80000000">
+            <Border Width="480"
+                    Background="{DynamicResource Brush.Surface}"
+                    BorderBrush="{DynamicResource Brush.Border}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource Radius.Modal}"
+                    Padding="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+              <StackPanel>
+                <TextBlock Text="Tạo Proxy Pool Mới" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,16" />
+
+                <TextBlock Text="Tên Pool" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewPoolName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14" />
+
+                <TextBlock Text="Chiến Lược (RoundRobin, LeastConnections, Random)" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewPoolStrategy, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,14" />
+
+                <TextBlock Text="Sticky Session TTL (giây)" FontSize="13" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,0,6" />
+                <TextBox Text="{Binding NewPoolStickyTtl, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" />
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Button Grid.Column="0"
+                          Style="{StaticResource Button.Secondary}"
+                          Command="{Binding CloseCreatePoolDialogCommand}"
+                          Content="Hủy Bỏ"
+                          Margin="0,0,6,0" />
+                  <Button Grid.Column="1"
+                          Style="{StaticResource Button.Primary}"
+                          Command="{Binding ConfirmCreatePoolCommand}"
+                          Content="Tạo Pool"
+                          Margin="6,0,0,0" />
+                </Grid>
+              </StackPanel>
+            </Border>
+          </Grid>
+        </Grid>
+
+        <Border Grid.Row="2"
+                Background="{DynamicResource Brush.Surface}"
+                BorderBrush="{DynamicResource Brush.Border}"
+                BorderThickness="0,1,0,0"
+                Padding="32,0">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <ui:SymbolIcon Symbol="Info24" FontSize="15" Foreground="{DynamicResource Brush.Muted}" Margin="0,0,8,0" />
+              <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource Brush.Muted}" FontSize="12" />
+            </StackPanel>
+            <TextBlock Grid.Column="1" Text="MobiFlux v1.0.0 (x64)" FontSize="11" Foreground="{DynamicResource Brush.Muted}" VerticalAlignment="Center" FontFamily="Consolas" />
+          </Grid>
+        </Border>
+      </Grid>
+    </Grid>
+  </Grid>
+</ui:FluentWindow>

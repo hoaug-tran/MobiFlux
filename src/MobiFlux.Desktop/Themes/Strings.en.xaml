@@ -1,0 +1,110 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+  <sys:String x:Key="Nav.Overview">OVERVIEW</sys:String>
+  <sys:String x:Key="Nav.Network">NETWORK ROUTING</sys:String>
+  <sys:String x:Key="Nav.System">SYSTEM MONITORING</sys:String>
+
+  <sys:String x:Key="Ui.Product">MobiFlux</sys:String>
+  <sys:String x:Key="Ui.ProductTagline">Cellular Proxy Manager</sys:String>
+  <sys:String x:Key="Ui.Dashboard">Dashboard</sys:String>
+  <sys:String x:Key="Ui.Proxies">Proxies</sys:String>
+  <sys:String x:Key="Ui.Devices">Devices</sys:String>
+  <sys:String x:Key="Ui.Sessions">Sessions</sys:String>
+  <sys:String x:Key="Ui.Routing">Routing</sys:String>
+  <sys:String x:Key="Ui.Rotation">IP Rotation</sys:String>
+  <sys:String x:Key="Ui.Health">Health</sys:String>
+  <sys:String x:Key="Ui.Logs">Logs</sys:String>
+  <sys:String x:Key="Ui.Settings">Settings</sys:String>
+
+  <sys:String x:Key="Ui.Refresh">Refresh</sys:String>
+  <sys:String x:Key="Ui.Discover">Scan ADB</sys:String>
+  <sys:String x:Key="Ui.CreateProxy">Create Proxy</sys:String>
+  <sys:String x:Key="Ui.RegisterDevice">Add Device</sys:String>
+  <sys:String x:Key="Ui.CreatePool">Create Pool</sys:String>
+  <sys:String x:Key="Ui.RotateNow">Rotate IP Now</sys:String>
+  <sys:String x:Key="Ui.Start">Start</sys:String>
+  <sys:String x:Key="Ui.Stop">Stop</sys:String>
+  <sys:String x:Key="Ui.Enable">Enable</sys:String>
+  <sys:String x:Key="Ui.Disable">Disable</sys:String>
+  <sys:String x:Key="Ui.Save">Save Config</sys:String>
+  <sys:String x:Key="Ui.Cancel">Cancel</sys:String>
+  <sys:String x:Key="Ui.Close">Close</sys:String>
+
+  <sys:String x:Key="Ui.Overview">System Overview</sys:String>
+  <sys:String x:Key="Ui.OverviewDetail">Realtime monitoring of traffic, mobile devices and proxy endpoints</sys:String>
+  <sys:String x:Key="Ui.ActiveProxies">Active Proxies</sys:String>
+  <sys:String x:Key="Ui.ActiveProxiesDetail">Ready to accept connections</sys:String>
+  <sys:String x:Key="Ui.ActiveDevices">Online Devices</sys:String>
+  <sys:String x:Key="Ui.ActiveDevicesDetail">Cellular nodes connected via ADB</sys:String>
+  <sys:String x:Key="Ui.RecordedSessions">Total Sessions</sys:String>
+  <sys:String x:Key="Ui.RecordedSessionsDetail">Secure client connection sessions</sys:String>
+  <sys:String x:Key="Ui.TrafficTotal">Total Bandwidth</sys:String>
+  <sys:String x:Key="Ui.TrafficTotalDetail">Cumulative Upload &amp; Download</sys:String>
+  <sys:String x:Key="Ui.ThroughputStream">Realtime Bandwidth Throughput &amp; Latency Stream</sys:String>
+  <sys:String x:Key="Ui.DownloadSpeed">Download</sys:String>
+  <sys:String x:Key="Ui.UploadSpeed">Upload</sys:String>
+  <sys:String x:Key="Ui.LatencyP99">Latency p99</sys:String>
+  <sys:String x:Key="Ui.Jitter">Jitter</sys:String>
+  <sys:String x:Key="Ui.PacketLoss">Packet Loss</sys:String>
+
+  <sys:String x:Key="Ui.CellularTelemetry">Cellular Telemetry &amp; SIM Data</sys:String>
+  <sys:String x:Key="Ui.SimStatus">SIM Status</sys:String>
+  <sys:String x:Key="Ui.Carrier">Carrier / Telco</sys:String>
+  <sys:String x:Key="Ui.SignalStrength">Signal Strength</sys:String>
+  <sys:String x:Key="Ui.NetworkType">Network Type</sys:String>
+  <sys:String x:Key="Ui.MonthlyQuota">Data Plan / Quota</sys:String>
+  <sys:String x:Key="Ui.Apn">APN</sys:String>
+  <sys:String x:Key="Ui.Iccid">SIM Card ID (ICCID)</sys:String>
+  <sys:String x:Key="Ui.CurrentWanIp">Current WAN IP</sys:String>
+
+  <sys:String x:Key="Ui.Col.Device">Device / Model</sys:String>
+  <sys:String x:Key="Ui.Col.AdbSerial">ADB Serial</sys:String>
+  <sys:String x:Key="Ui.Col.NodeState">Node State</sys:String>
+  <sys:String x:Key="Ui.Col.Network">Network</sys:String>
+  <sys:String x:Key="Ui.Col.Battery">Battery</sys:String>
+  <sys:String x:Key="Ui.Col.Carrier">SIM Carrier</sys:String>
+  <sys:String x:Key="Ui.Col.Signal">Signal</sys:String>
+  <sys:String x:Key="Ui.Col.Quota">Data Quota</sys:String>
+  <sys:String x:Key="Ui.Col.Actions">Actions</sys:String>
+  <sys:String x:Key="Ui.Col.ProxyName">Proxy Name</sys:String>
+  <sys:String x:Key="Ui.Col.BindAddress">Bind Address</sys:String>
+  <sys:String x:Key="Ui.Col.Port">Port</sys:String>
+  <sys:String x:Key="Ui.Col.Protocol">Protocol</sys:String>
+  <sys:String x:Key="Ui.Col.AssignedNode">Assigned Node</sys:String>
+  <sys:String x:Key="Ui.Col.Latency">Latency</sys:String>
+  <sys:String x:Key="Ui.Col.Status">Status</sys:String>
+  <sys:String x:Key="Ui.Col.SessionId">Session ID</sys:String>
+  <sys:String x:Key="Ui.Col.ClientIp">Client IP</sys:String>
+  <sys:String x:Key="Ui.Col.Target">Target Host</sys:String>
+  <sys:String x:Key="Ui.Col.Duration">Duration</sys:String>
+  <sys:String x:Key="Ui.Col.Traffic">Traffic</sys:String>
+  <sys:String x:Key="Ui.Col.NewIp">New WAN IP</sys:String>
+  <sys:String x:Key="Ui.Col.PrevIp">Previous WAN IP</sys:String>
+  <sys:String x:Key="Ui.Col.Time">Timestamp</sys:String>
+  <sys:String x:Key="Ui.Col.Trigger">Triggered By</sys:String>
+  <sys:String x:Key="Ui.Col.Result">Result</sys:String>
+
+  <sys:String x:Key="Ui.Title.Proxies">Manage Proxy Endpoints</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Proxies">Configure SOCKS5 and HTTP listener endpoints multiplexed to Android devices.</sys:String>
+  <sys:String x:Key="Ui.Title.Devices">Manage Android Devices &amp; SIMs (ADB Nodes)</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Devices">Monitor connected mobile nodes, cellular signal, carriers, and rotation via ADB loopback.</sys:String>
+  <sys:String x:Key="Ui.Title.Sessions">Active Sessions &amp; Connections</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Sessions">Live inspection of client TCP/HTTP streams traversing the cellular proxy mesh.</sys:String>
+  <sys:String x:Key="Ui.Title.Routing">Routing &amp; Proxy Pools</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Routing">Traffic balancing policies and proxy clustering across Android cellular devices.</sys:String>
+  <sys:String x:Key="Ui.Title.Rotation">Cellular IP Rotation</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Rotation">Trigger radio reset over ADB loopback to obtain a fresh carrier WAN IP address.</sys:String>
+  <sys:String x:Key="Ui.Title.Health">Infrastructure Health Status</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Health">Continuous verification of control-plane services, ADB port forwards, and fail-closed safety.</sys:String>
+  <sys:String x:Key="Ui.Title.Logs">Live Diagnostics Logs</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Logs">Realtime diagnostic event stream from the control-plane and proxy runners.</sys:String>
+  <sys:String x:Key="Ui.Title.Settings">System Configuration &amp; Settings</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Settings">Service endpoints, port ranges, network interfaces and desktop appearance.</sys:String>
+
+  <sys:String x:Key="Ui.DeviceInventory">Android Device Inventory</sys:String>
+  <sys:String x:Key="Ui.EndpointInventory">Proxy Endpoint Inventory</sys:String>
+  <sys:String x:Key="Ui.ThemeToggle">Toggle Light / Dark Theme</sys:String>
+  <sys:String x:Key="Ui.LanguageToggle">Switch Language VI / EN</sys:String>
+</ResourceDictionary>

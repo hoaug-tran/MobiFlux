@@ -1,0 +1,110 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+  <sys:String x:Key="Nav.Overview">TỔNG QUAN</sys:String>
+  <sys:String x:Key="Nav.Network">ĐIỀU HƯỚNG MẠNG</sys:String>
+  <sys:String x:Key="Nav.System">GIÁM SÁT HỆ THỐNG</sys:String>
+
+  <sys:String x:Key="Ui.Product">MobiFlux</sys:String>
+  <sys:String x:Key="Ui.ProductTagline">Cellular Proxy Manager</sys:String>
+  <sys:String x:Key="Ui.Dashboard">Dashboard</sys:String>
+  <sys:String x:Key="Ui.Proxies">Proxies</sys:String>
+  <sys:String x:Key="Ui.Devices">Devices</sys:String>
+  <sys:String x:Key="Ui.Sessions">Sessions</sys:String>
+  <sys:String x:Key="Ui.Routing">Routing</sys:String>
+  <sys:String x:Key="Ui.Rotation">IP Rotation</sys:String>
+  <sys:String x:Key="Ui.Health">Health</sys:String>
+  <sys:String x:Key="Ui.Logs">Logs</sys:String>
+  <sys:String x:Key="Ui.Settings">Settings</sys:String>
+
+  <sys:String x:Key="Ui.Refresh">Làm Mới</sys:String>
+  <sys:String x:Key="Ui.Discover">Quét Lại ADB</sys:String>
+  <sys:String x:Key="Ui.CreateProxy">Tạo Proxy Mới</sys:String>
+  <sys:String x:Key="Ui.RegisterDevice">Thêm Thiết Bị</sys:String>
+  <sys:String x:Key="Ui.CreatePool">Tạo Pool Mới</sys:String>
+  <sys:String x:Key="Ui.RotateNow">Đổi IP Ngay</sys:String>
+  <sys:String x:Key="Ui.Start">Khởi Chạy</sys:String>
+  <sys:String x:Key="Ui.Stop">Dừng Lại</sys:String>
+  <sys:String x:Key="Ui.Enable">Bật Node</sys:String>
+  <sys:String x:Key="Ui.Disable">Tắt Node</sys:String>
+  <sys:String x:Key="Ui.Save">Lưu Cấu Hình</sys:String>
+  <sys:String x:Key="Ui.Cancel">Hủy Bỏ</sys:String>
+  <sys:String x:Key="Ui.Close">Đóng</sys:String>
+
+  <sys:String x:Key="Ui.Overview">Tổng quan hệ thống</sys:String>
+  <sys:String x:Key="Ui.OverviewDetail">Giám sát lưu lượng, thiết bị di động và các điểm cuối proxy thời gian thực</sys:String>
+  <sys:String x:Key="Ui.ActiveProxies">Proxy Đang Chạy</sys:String>
+  <sys:String x:Key="Ui.ActiveProxiesDetail">Sẵn sàng phục vụ kết nối</sys:String>
+  <sys:String x:Key="Ui.ActiveDevices">Thiết Bị Sẵn Sàng</sys:String>
+  <sys:String x:Key="Ui.ActiveDevicesDetail">Node di động kết nối ADB</sys:String>
+  <sys:String x:Key="Ui.RecordedSessions">Tổng Số Phiên</sys:String>
+  <sys:String x:Key="Ui.RecordedSessionsDetail">Phiên làm việc client an toàn</sys:String>
+  <sys:String x:Key="Ui.TrafficTotal">Tổng Lưu Lượng</sys:String>
+  <sys:String x:Key="Ui.TrafficTotalDetail">Upload &amp; Download tích lũy</sys:String>
+  <sys:String x:Key="Ui.ThroughputStream">Lưu Lượng Băng Thông &amp; Độ Trễ Thời Gian Thực</sys:String>
+  <sys:String x:Key="Ui.DownloadSpeed">Tải xuống</sys:String>
+  <sys:String x:Key="Ui.UploadSpeed">Tải lên</sys:String>
+  <sys:String x:Key="Ui.LatencyP99">Độ trễ p99</sys:String>
+  <sys:String x:Key="Ui.Jitter">Jitter</sys:String>
+  <sys:String x:Key="Ui.PacketLoss">Mất gói</sys:String>
+
+  <sys:String x:Key="Ui.CellularTelemetry">Thông Số Sóng &amp; Dữ Liệu SIM</sys:String>
+  <sys:String x:Key="Ui.SimStatus">Trạng Thái SIM</sys:String>
+  <sys:String x:Key="Ui.Carrier">Nhà Mạng</sys:String>
+  <sys:String x:Key="Ui.SignalStrength">Cường Độ Sóng</sys:String>
+  <sys:String x:Key="Ui.NetworkType">Chuẩn Kết Nối</sys:String>
+  <sys:String x:Key="Ui.MonthlyQuota">Gói Cước / Dung Lượng</sys:String>
+  <sys:String x:Key="Ui.Apn">APN</sys:String>
+  <sys:String x:Key="Ui.Iccid">Mã Số Thẻ SIM (ICCID)</sys:String>
+  <sys:String x:Key="Ui.CurrentWanIp">Địa Chỉ IP WAN Hiện Tại</sys:String>
+
+  <sys:String x:Key="Ui.Col.Device">Thiết Bị / Model</sys:String>
+  <sys:String x:Key="Ui.Col.AdbSerial">ADB Serial</sys:String>
+  <sys:String x:Key="Ui.Col.NodeState">Trạng Thái Node</sys:String>
+  <sys:String x:Key="Ui.Col.Network">Mạng Di Động</sys:String>
+  <sys:String x:Key="Ui.Col.Battery">Dung Lượng Pin</sys:String>
+  <sys:String x:Key="Ui.Col.Carrier">Nhà Mạng SIM</sys:String>
+  <sys:String x:Key="Ui.Col.Signal">Cường Độ Sóng</sys:String>
+  <sys:String x:Key="Ui.Col.Quota">Dung Lượng Data</sys:String>
+  <sys:String x:Key="Ui.Col.Actions">Thao Tác</sys:String>
+  <sys:String x:Key="Ui.Col.ProxyName">Tên Proxy</sys:String>
+  <sys:String x:Key="Ui.Col.BindAddress">Địa Chỉ Bind</sys:String>
+  <sys:String x:Key="Ui.Col.Port">Cổng Port</sys:String>
+  <sys:String x:Key="Ui.Col.Protocol">Giao Thức</sys:String>
+  <sys:String x:Key="Ui.Col.AssignedNode">Node Gán</sys:String>
+  <sys:String x:Key="Ui.Col.Latency">Độ Trễ</sys:String>
+  <sys:String x:Key="Ui.Col.Status">Trạng Thái</sys:String>
+  <sys:String x:Key="Ui.Col.SessionId">Mã Phiên</sys:String>
+  <sys:String x:Key="Ui.Col.ClientIp">Client IP</sys:String>
+  <sys:String x:Key="Ui.Col.Target">Mục Tiêu Đích</sys:String>
+  <sys:String x:Key="Ui.Col.Duration">Thời Lượng</sys:String>
+  <sys:String x:Key="Ui.Col.Traffic">Lưu Lượng</sys:String>
+  <sys:String x:Key="Ui.Col.NewIp">IP WAN Mới</sys:String>
+  <sys:String x:Key="Ui.Col.PrevIp">IP Trước Đó</sys:String>
+  <sys:String x:Key="Ui.Col.Time">Thời Gian</sys:String>
+  <sys:String x:Key="Ui.Col.Trigger">Kích Hoạt Bởi</sys:String>
+  <sys:String x:Key="Ui.Col.Result">Kết Quả</sys:String>
+
+  <sys:String x:Key="Ui.Title.Proxies">Quản Lý Proxy Endpoints</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Proxies">Danh sách các cổng proxy listener SOCKS5 và HTTP phân phối luồng qua thiết bị Android di động.</sys:String>
+  <sys:String x:Key="Ui.Title.Devices">Quản Lý Thiết Bị Android &amp; SIM (ADB Nodes)</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Devices">Quản lý các thiết bị di động, theo dõi sóng, nhà mạng và chu kỳ đổi IP tự động qua ADB loopback.</sys:String>
+  <sys:String x:Key="Ui.Title.Sessions">Theo Dõi Sessions &amp; Luồng Kết Nối</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Sessions">Giám sát trực tiếp các kết nối TCP/HTTP client đang truyền dữ liệu qua các điểm cuối proxy.</sys:String>
+  <sys:String x:Key="Ui.Title.Routing">Định Tuyến &amp; Proxy Pools</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Routing">Quy tắc điều phối và phân bổ lưu lượng truy cập qua cụm thiết bị Android di động.</sys:String>
+  <sys:String x:Key="Ui.Title.Rotation">IP Rotation &amp; Đổi IP Mạng Di Động</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Rotation">Kích hoạt reset sóng radio di động qua ADB để lấy địa chỉ IP WAN mới từ nhà mạng.</sys:String>
+  <sys:String x:Key="Ui.Title.Health">Kiểm Tra Sức Khỏe Hạ Tầng</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Health">Giám sát liên tục tính toàn vẹn của tiến trình, cổng mạng và nguyên tắc an toàn cellular fail-closed.</sys:String>
+  <sys:String x:Key="Ui.Title.Logs">Nhật Ký Hoạt Động Thời Gian Thực</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Logs">Dòng thông điệp chẩn đoán thời gian thực từ control-plane và proxy workers.</sys:String>
+  <sys:String x:Key="Ui.Title.Settings">Cài Đặt Hệ Thống &amp; Cấu Hình</sys:String>
+  <sys:String x:Key="Ui.Subtitle.Settings">Cấu hình kết nối API backend, dải cổng proxy và tùy biến giao diện.</sys:String>
+
+  <sys:String x:Key="Ui.DeviceInventory">Danh Sách Thiết Bị Android</sys:String>
+  <sys:String x:Key="Ui.EndpointInventory">Danh Sách Proxy Endpoints</sys:String>
+  <sys:String x:Key="Ui.ThemeToggle">Giao diện Sáng / Tối</sys:String>
+  <sys:String x:Key="Ui.LanguageToggle">Đổi ngôn ngữ VI / EN</sys:String>
+</ResourceDictionary>
