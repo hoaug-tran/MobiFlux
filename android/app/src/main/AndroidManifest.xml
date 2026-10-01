@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <application android:theme="@style/AppTheme" android:label="MobiFlux Agent">
+    <activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter></activity>
+    <service android:name=".CellularProxyService" android:exported="false" android:foregroundServiceType="dataSync" />
+  </application>
+</manifest>
