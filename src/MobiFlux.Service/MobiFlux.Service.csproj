@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MobiFlux.Domain\MobiFlux.Domain.csproj" />
+    <ProjectReference Include="..\MobiFlux.Application\MobiFlux.Application.csproj" />
+    <ProjectReference Include="..\MobiFlux.Shared\MobiFlux.Shared.csproj" />
+    <ProjectReference Include="..\MobiFlux.Infrastructure\MobiFlux.Infrastructure.csproj" />
+    <ProjectReference Include="..\MobiFlux.Proxy\MobiFlux.Proxy.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.10" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
+  </ItemGroup>
+</Project>
