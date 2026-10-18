@@ -521,3 +521,4 @@ android/.idea/
 
 # Project tracking and local registers
 _project/**/*.local.*
+.artifacts/
