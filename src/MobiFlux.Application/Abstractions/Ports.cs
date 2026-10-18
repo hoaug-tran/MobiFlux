@@ -18,9 +18,11 @@ public interface IProxyRepository
     Task<ProxyEndpoint?> GetEndpointAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<ProxyEndpoint>> ListEndpointsAsync(CancellationToken cancellationToken);
     Task AddEndpointAsync(ProxyEndpoint endpoint, CancellationToken cancellationToken);
+    void RemoveEndpoint(ProxyEndpoint endpoint);
     Task<ProxyPool?> GetPoolAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<ProxyPool>> ListPoolsAsync(CancellationToken cancellationToken);
     Task AddPoolAsync(ProxyPool pool, CancellationToken cancellationToken);
+    void RemovePool(ProxyPool pool);
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
 public interface IProxyDefaults
@@ -56,8 +58,30 @@ public interface IAdbClient
     Task<bool> RotateDeviceIpAsync(string serial, CancellationToken cancellationToken);
 }
 public interface IAdbForwarder { Task ForwardAsync(string serial, int localPort, int devicePort, CancellationToken cancellationToken); }
+public interface IAgentStatusProbe
+{
+    Task<bool> ProbeCellularAsync(string serial, Guid deviceId, CancellationToken cancellationToken);
+}
+public interface IProxyConnectivityProbe
+{
+    Task<ProxyTestResultDto> TestAsync(Guid endpointId, string bindAddress, int port, ProxyProtocol protocol, CancellationToken cancellationToken, string? username = null, string? password = null);
+}
+public interface IDeviceEgressProbe
+{
+    Task<string> GetIpAsync(Guid deviceId, CancellationToken cancellationToken);
+}
+public interface IRuntimeTelemetry
+{
+    RuntimeSnapshotDto Sample();
+}
+public interface IRotationHistory
+{
+    IReadOnlyList<RotationResultDto> List();
+    void Add(RotationResultDto result);
+}
 public interface IProxyRuntime
 {
+    void RefreshRoutes(IReadOnlyList<DeviceNode> devices, IReadOnlyList<ProxyPool> pools);
     bool IsRunning(Guid endpointId);
     Task StartAsync(ProxyEndpoint endpoint, IReadOnlyList<DeviceNode> devices, IReadOnlyList<ProxyPool> pools, CancellationToken cancellationToken);
     Task StopAsync(Guid endpointId);

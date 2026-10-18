@@ -11,7 +11,10 @@ public sealed class CreateProxyEndpointCommandValidator : AbstractValidator<Crea
         RuleFor(command => command.Name).NotEmpty().MaximumLength(128);
         RuleFor(command => command.BindAddress).Must(address => IPAddress.TryParse(address, out _)).WithMessage("Bind address must be an IP address.");
         RuleFor(command => command.Port).InclusiveBetween(1, 65535);
-        RuleFor(command => command.Protocol).Must(protocol => Enum.TryParse<ProxyProtocol>(protocol, true, out _)).WithMessage("Protocol must be SOCKS5 or HTTP CONNECT.");
+        RuleFor(command => command.Protocol).Must(protocol => Enum.TryParse<ProxyProtocol>(protocol, true, out var value) && Enum.IsDefined(value)).WithMessage("Protocol must be SOCKS5 or HTTP CONNECT.");
+        RuleFor(command => command.Username).MaximumLength(128);
+        RuleFor(command => command.Password).MaximumLength(255);
+        RuleFor(command => command.AllowedClients).MaximumLength(4096);
         RuleFor(command => command).Must(command => (command.DeviceId is null) != (command.PoolId is null)).WithMessage("Specify exactly one device or pool target.");
     }
 }

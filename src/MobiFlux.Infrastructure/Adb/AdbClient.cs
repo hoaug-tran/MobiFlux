@@ -7,6 +7,7 @@ namespace MobiFlux.Infrastructure.Adb;
 
 public sealed class AdbClient(string executablePath) : IAdbClient, IAdbForwarder
 {
+    private readonly SemaphoreSlim _rotationGate = new(1);
     public async Task<IReadOnlyList<AdbDevice>> ListDevicesAsync(CancellationToken cancellationToken)
     {
         var output = await ExecuteAsync("devices -l", cancellationToken);
@@ -77,57 +78,55 @@ public sealed class AdbClient(string executablePath) : IAdbClient, IAdbForwarder
             }
             else
             {
-                signalDbm = "-80 dBm";
+                signalDbm = null;
             }
         }
         catch { }
 
-        try
-        {
-            var simState = await ExecuteShellAsync(serial, "getprop gsm.sim.state", cancellationToken);
-            if (!string.IsNullOrWhiteSpace(simState))
-            {
-                iccid = simState.Trim();
-            }
-        }
-        catch { }
-
-        try
-        {
-            var ipOutput = await ExecuteShellAsync(serial, "ip route get 8.8.8.8", cancellationToken);
-            var ipMatch = Regex.Match(ipOutput, @"src\s+(\d+\.\d+\.\d+\.\d+)");
-            if (ipMatch.Success)
-            {
-                wanIp = ipMatch.Groups[1].Value;
-            }
-        }
-        catch { }
-
-        return new DeviceTelemetryDto(serial, carrier, network, signalDbm, battery, apn ?? "v-internet", iccid, wanIp);
+        return new DeviceTelemetryDto(serial, carrier, network, signalDbm, battery, apn, iccid, wanIp);
     }
 
     public async Task<bool> RotateDeviceIpAsync(string serial, CancellationToken cancellationToken)
     {
+        await _rotationGate.WaitAsync(cancellationToken);
+        try { return await RotateCoreAsync(serial, cancellationToken); }
+        finally { _rotationGate.Release(); }
+    }
+
+    private async Task<bool> RotateCoreAsync(string serial, CancellationToken cancellationToken)
+    {
         try
         {
-            await ExecuteShellAsync(serial, "cmd connectivity airplane-mode enable", cancellationToken);
-            await Task.Delay(1500, cancellationToken);
-            await ExecuteShellAsync(serial, "cmd connectivity airplane-mode disable", cancellationToken);
+            await ToggleNetworkAsync(serial, "cmd connectivity airplane-mode enable", "cmd connectivity airplane-mode disable", cancellationToken);
             return true;
         }
-        catch
+        catch (Exception exception) when (exception is IOException or OperationCanceledException)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                await ExecuteShellAsync(serial, "svc data disable", cancellationToken);
-                await Task.Delay(1500, cancellationToken);
-                await ExecuteShellAsync(serial, "svc data enable", cancellationToken);
+                await ToggleNetworkAsync(serial, "svc data disable", "svc data enable", cancellationToken);
                 return true;
             }
-            catch
+            catch (Exception fallbackException) when (fallbackException is IOException or OperationCanceledException)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 return false;
             }
+        }
+    }
+
+    private async Task ToggleNetworkAsync(string serial, string disable, string restore, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await ExecuteShellAsync(serial, disable, cancellationToken);
+            await Task.Delay(1500, cancellationToken);
+        }
+        finally
+        {
+            using var recovery = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            await ExecuteShellAsync(serial, restore, recovery.Token);
         }
     }
 
@@ -145,7 +144,13 @@ public sealed class AdbClient(string executablePath) : IAdbClient, IAdbForwarder
         timeout.CancelAfter(TimeSpan.FromSeconds(15));
         var standardOutput = process.StandardOutput.ReadToEndAsync(timeout.Token);
         var standardError = process.StandardError.ReadToEndAsync(timeout.Token);
-        await process.WaitForExitAsync(timeout.Token);
+        try { await process.WaitForExitAsync(timeout.Token); }
+        catch (OperationCanceledException)
+        {
+            if (!process.HasExited) process.Kill(entireProcessTree: true);
+            try { await Task.WhenAll(standardOutput, standardError); } catch (OperationCanceledException) { }
+            throw;
+        }
         var error = await standardError;
         var output = await standardOutput;
         if (process.ExitCode != 0) throw new IOException($"ADB failed ({process.ExitCode}): {error.Trim()}");
@@ -154,7 +159,7 @@ public sealed class AdbClient(string executablePath) : IAdbClient, IAdbForwarder
 
     private static AdbDevice? ParseDevice(string line)
     {
-        var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var parts = line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 2) return null;
         string? Field(string key) => parts.FirstOrDefault(x => x.StartsWith(key + ":", StringComparison.Ordinal))?[((key.Length + 1)..)];
         return new(parts[0], parts[1], Field("model"), Field("product"), null);

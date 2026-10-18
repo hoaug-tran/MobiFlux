@@ -15,6 +15,10 @@ public sealed class CachedRouteResolver(TimeProvider timeProvider, int maxSticky
     private readonly ConcurrentDictionary<Guid, int> _activeConnections = new();
     private int _roundRobin;
     private int _weightedRoundRobin;
+    public (int Total, int Ready) Readiness
+    {
+        get { lock (_sync) return (_devices.Count, _devices.Values.Count(device => device.Enabled && device.ActualState == DeviceActualState.ProxyReady)); }
+    }
     public void Refresh(IEnumerable<DeviceNode> devices, IEnumerable<ProxyPool> pools)
     { lock (_sync) { _devices = devices.ToDictionary(x => x.Id); _pools = pools.ToDictionary(x => x.Id); } }
     public Task<RouteDecision?> ResolveAsync(ProxyEndpoint endpoint, string stickyKey, CancellationToken cancellationToken)

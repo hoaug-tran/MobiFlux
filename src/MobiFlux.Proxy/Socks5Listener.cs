@@ -5,23 +5,46 @@ using MobiFlux.Domain.Proxies;
 
 namespace MobiFlux.Proxy;
 
-internal sealed class Socks5Listener(ProxyEndpoint endpoint, IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer)
-    : ProxyListener(endpoint, routes, tunnels, observer)
+internal sealed class Socks5Listener(ProxyEndpoint endpoint, IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer, ProxyTransportOptions options)
+    : ProxyListener(endpoint, routes, tunnels, observer, options)
 {
     protected override async Task HandleClientAsync(NetworkStream client, CancellationToken cancellationToken)
     {
+        using var handshake = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        handshake.CancelAfter(Options.ConnectTimeout);
+        var lifetime = cancellationToken;
+        cancellationToken = handshake.Token;
         var greeting = await ReadExactlyAsync(client, 2, cancellationToken);
         if (greeting[0] != 5) return;
         var methods = await ReadExactlyAsync(client, greeting[1], cancellationToken);
-        if (!methods.Contains((byte)0)) { await client.WriteAsync(new byte[] { 5, 0xFF }, cancellationToken); return; }
-        await client.WriteAsync(new byte[] { 5, 0 }, cancellationToken);
+        var method = Endpoint.RequiresAuthentication ? (byte)2 : (byte)0;
+        if (!methods.Contains(method)) { await client.WriteAsync(new byte[] { 5, 0xFF }, cancellationToken); return; }
+        await client.WriteAsync(new byte[] { 5, method }, cancellationToken);
+        if (Endpoint.RequiresAuthentication)
+        {
+            var auth = await ReadExactlyAsync(client, 2, cancellationToken);
+            if (auth[0] != 1 || auth[1] == 0) { await client.WriteAsync(new byte[] { 1, 1 }, cancellationToken); return; }
+            var username = Encoding.UTF8.GetString(await ReadExactlyAsync(client, auth[1], cancellationToken));
+            var passwordLength = (await ReadExactlyAsync(client, 1, cancellationToken))[0];
+            var password = Encoding.UTF8.GetString(await ReadExactlyAsync(client, passwordLength, cancellationToken));
+            var valid = passwordLength > 0 && Endpoint.Authenticate(username, password);
+            await client.WriteAsync(new byte[] { 1, valid ? (byte)0 : (byte)1 }, cancellationToken);
+            if (!valid) return;
+        }
         var request = await ReadExactlyAsync(client, 4, cancellationToken);
-        if (request[0] != 5 || request[1] != 1) { await ReplyAsync(client, 7, cancellationToken); return; }
+        if (request[0] != 5 || request[2] != 0) { await ReplyAsync(client, 1, cancellationToken); return; }
+        if (request[1] != 1) { await ReplyAsync(client, 7, cancellationToken); return; }
+        if (request[3] is not (1 or 3 or 4)) { await ReplyAsync(client, 8, cancellationToken); return; }
         var host = await ReadHostAsync(client, request[3], cancellationToken);
         var portBytes = await ReadExactlyAsync(client, 2, cancellationToken);
         var port = (portBytes[0] << 8) | portBytes[1];
-        try { await BridgeAsync(client, host, port, token => ReplyAsync(client, 0, token), cancellationToken); }
-        catch { await ReplyAsync(client, 1, cancellationToken); return; }
+        if (string.IsNullOrWhiteSpace(host) || port == 0) { await ReplyAsync(client, 1, cancellationToken); return; }
+        var connected = false;
+        try { await BridgeAsync(client, host, port, async token => { await ReplyAsync(client, 0, token); connected = true; }, lifetime); }
+        catch (Exception exception) when (exception is IOException or SocketException or OperationCanceledException)
+        {
+            if (!connected && !lifetime.IsCancellationRequested) await ReplyAsync(client, 1, lifetime);
+        }
     }
     private static async Task<string> ReadHostAsync(NetworkStream stream, byte addressType, CancellationToken token) => addressType switch
     {

@@ -4,11 +4,12 @@ using MobiFlux.Domain.Devices;
 
 namespace MobiFlux.Application.Features.Devices.ReconcileDevices;
 
-public sealed class ReconcileDevicesHandler(IDeviceRepository devices, IAdbClient adb, TimeProvider clock) : IRequestHandler<ReconcileDevicesCommand, int>
+public sealed class ReconcileDevicesHandler(IDeviceRepository devices, IAdbClient adb, IAgentStatusProbe probe, TimeProvider clock) : IRequestHandler<ReconcileDevicesCommand, int>
 {
     public async Task<int> Handle(ReconcileDevicesCommand command, CancellationToken cancellationToken)
     {
         var known = await devices.ListAsync(cancellationToken);
+        var allDevices = known.ToList();
         var connected = await adb.ListDevicesAsync(cancellationToken);
         var now = clock.GetUtcNow();
         var knownSerials = known.Select(item => item.AdbSerial).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -21,20 +22,31 @@ public sealed class ReconcileDevicesHandler(IDeviceRepository devices, IAdbClien
                 var newDevice = new DeviceNode(conn.Serial, name, now);
                 newDevice.SetIdentity(conn.Manufacturer, conn.Model, conn.AndroidVersion, now);
                 newDevice.Enable(now);
-                newDevice.Reconcile(conn.State == "device" ? DeviceActualState.ProxyReady : DeviceActualState.Discovered, now);
+                newDevice.Reconcile(DeviceActualState.Discovered, now);
                 await devices.AddAsync(newDevice, cancellationToken);
+                allDevices.Add(newDevice);
+                knownSerials.Add(conn.Serial);
             }
         }
 
-        foreach (var device in known)
+        foreach (var device in allDevices)
         {
             var current = connected.FirstOrDefault(item => string.Equals(item.Serial, device.AdbSerial, StringComparison.OrdinalIgnoreCase));
             var state = current?.State switch
             {
-                "device" => DeviceActualState.ProxyReady,
+                "device" => DeviceActualState.AgentUnavailable,
                 "unauthorized" => DeviceActualState.Unauthorized,
                 _ => DeviceActualState.Offline
             };
+            if (device.Enabled && current?.State == "device")
+            {
+                try { state = await probe.ProbeCellularAsync(device.AdbSerial, device.Id, cancellationToken) ? DeviceActualState.ProxyReady : DeviceActualState.CellularUnavailable; }
+                catch (Exception exception) when (exception is IOException or HttpRequestException or System.Text.Json.JsonException or OperationCanceledException)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    state = DeviceActualState.AgentUnavailable;
+                }
+            }
             device.Reconcile(state, now);
             if (current is not null)
             {

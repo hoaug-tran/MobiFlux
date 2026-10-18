@@ -30,5 +30,5 @@ public sealed class ProxyPoolsController(ISender sender) : ApiControllerBase
 
     [HttpPut("{poolId:guid}")]
     public async Task<ActionResult<ApiResponse<ProxyPoolDto>>> Update(Guid poolId, UpdateProxyPoolRequest request, CancellationToken cancellationToken) =>
-        Success(await sender.Send(new UpdateProxyPoolCommand(poolId, request.Strategy, request.StickyTtlSeconds, request.Enabled), cancellationToken));
+        Success(await sender.Send(new UpdateProxyPoolCommand(poolId, request.Strategy, request.StickyTtlSeconds, request.Enabled, request.Members), cancellationToken));
 }

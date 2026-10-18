@@ -15,9 +15,11 @@ public static class ServiceCollectionExtensions
         services.AddOptions<RoutingOptions>().BindConfiguration(RoutingOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
         services.AddOptions<SessionPersistenceOptions>().BindConfiguration(SessionPersistenceOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
         services.AddOptions<ApiOptions>().BindConfiguration(ApiOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
+        services.AddOptions<TelemetryOptions>().BindConfiguration(TelemetryOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
         services.AddSingleton(TimeProvider.System);
         services.AddHostedService<RuntimeReconciliationWorker>();
         services.AddHostedService<ProxySessionPersistenceWorker>();
+        services.AddHostedService<RuntimeTelemetryWorker>();
         services.AddControllers(); services.AddSignalR(); services.AddHealthChecks(); services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         return services;

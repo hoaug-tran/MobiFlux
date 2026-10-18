@@ -1,11 +1,12 @@
-using System.Diagnostics;
-using System.Net.Sockets;
+using MobiFlux.Application.Features.Proxies.TestProxyEndpoint;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MobiFlux.Application.Features.Proxies.CreateProxyEndpoint;
 using MobiFlux.Application.Features.Proxies.GetProxyEndpoints;
 using MobiFlux.Application.Features.Proxies.StartProxyEndpoint;
 using MobiFlux.Application.Features.Proxies.StopProxyEndpoint;
+using MobiFlux.Application.Features.Proxies.UpdateProxyEndpoint;
+using MobiFlux.Application.Features.Proxies.DeleteProxyEndpoint;
 using MobiFlux.Shared.Common;
 using MobiFlux.Shared.Contracts;
 using MobiFlux.Shared.Routing;
@@ -15,6 +16,15 @@ namespace MobiFlux.Service.Controllers;
 [Route(ApiRoutes.Proxies)]
 public sealed class ProxiesController(ISender sender) : ApiControllerBase
 {
+    [HttpPut("{endpointId:guid}")]
+    public async Task<ActionResult<ApiResponse<ProxyEndpointDto>>> Update(Guid endpointId, UpdateProxyEndpointRequest request, CancellationToken cancellationToken) =>
+        Success(await sender.Send(new UpdateProxyEndpointCommand(endpointId, request.Name, request.MaxConnections, request.Enabled), cancellationToken));
+    [HttpDelete("{endpointId:guid}")]
+    public async Task<IActionResult> Delete(Guid endpointId, CancellationToken cancellationToken)
+    {
+        await sender.Send(new DeleteProxyEndpointCommand(endpointId), cancellationToken);
+        return NoContent();
+    }
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<ProxyEndpointDto>>>> Get(CancellationToken cancellationToken) =>
         Success(await sender.Send(new GetProxyEndpointsQuery(), cancellationToken));
@@ -22,7 +32,7 @@ public sealed class ProxiesController(ISender sender) : ApiControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<ProxyEndpointDto>>> Create(CreateProxyEndpointRequest request, CancellationToken cancellationToken)
     {
-        var endpoint = await sender.Send(new CreateProxyEndpointCommand(request.Name, request.BindAddress, request.Port, request.Protocol, request.DeviceId, request.PoolId), cancellationToken);
+        var endpoint = await sender.Send(new CreateProxyEndpointCommand(request.Name, request.BindAddress, request.Port, request.Protocol, request.DeviceId, request.PoolId, request.Username, request.Password, request.AllowedClients), cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = endpoint.Id }, ApiResponse<ProxyEndpointDto>.Ok(endpoint, HttpContext.TraceIdentifier));
     }
 
@@ -38,52 +48,10 @@ public sealed class ProxiesController(ISender sender) : ApiControllerBase
     }
 
     [HttpPost("{endpointId:guid}/test")]
-    public async Task<ActionResult<ApiResponse<ProxyTestResultDto>>> TestEndpoint(Guid endpointId, CancellationToken cancellationToken)
-    {
-        var endpoints = await sender.Send(new GetProxyEndpointsQuery(), cancellationToken);
-        var ep = endpoints.FirstOrDefault(x => x.Id == endpointId);
-        if (ep is null) return NotFound(new ApiError("ENDPOINT_NOT_FOUND", "Proxy endpoint was not found."));
-
-        var sw = Stopwatch.StartNew();
-        try
-        {
-            using var client = new TcpClient();
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(TimeSpan.FromSeconds(3));
-            await client.ConnectAsync(ep.BindAddress, ep.Port, cts.Token);
-            sw.Stop();
-            var result = new ProxyTestResultDto(endpointId, true, (int)sw.ElapsedMilliseconds, ep.BindAddress, ep.Protocol, "Hoạt động bình thường (Operational)");
-            return Success(result);
-        }
-        catch (Exception ex)
-        {
-            sw.Stop();
-            var result = new ProxyTestResultDto(endpointId, false, (int)sw.ElapsedMilliseconds, ep.BindAddress, ep.Protocol, $"Không thể kết nối cổng {ep.Port}: {ex.Message}");
-            return Success(result);
-        }
-    }
+    public async Task<ActionResult<ApiResponse<ProxyTestResultDto>>> TestEndpoint(Guid endpointId, [FromBody] ProxyProbeCredentials? credentials, CancellationToken cancellationToken) =>
+        Success(await sender.Send(new TestProxyEndpointCommand(endpointId, Username: credentials?.Username, Password: credentials?.Password), cancellationToken));
 
     [HttpPost("test-quick")]
-    public async Task<ActionResult<ApiResponse<ProxyTestResultDto>>> TestQuick([FromBody] CreateProxyEndpointRequest? req, CancellationToken cancellationToken)
-    {
-        var host = req?.BindAddress ?? "127.0.0.1";
-        var port = req?.Port ?? 1080;
-        var sw = Stopwatch.StartNew();
-        try
-        {
-            using var client = new TcpClient();
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(TimeSpan.FromSeconds(3));
-            await client.ConnectAsync(host, port, cts.Token);
-            sw.Stop();
-            var result = new ProxyTestResultDto(Guid.NewGuid(), true, (int)sw.ElapsedMilliseconds, host, req?.Protocol ?? "SOCKS5", "Đạt chuẩn an toàn di động (Operational)");
-            return Success(result);
-        }
-        catch (Exception ex)
-        {
-            sw.Stop();
-            var result = new ProxyTestResultDto(Guid.NewGuid(), false, (int)sw.ElapsedMilliseconds, host, req?.Protocol ?? "SOCKS5", $"Chưa mở hoặc không thể kết nối: {ex.Message}");
-            return Success(result);
-        }
-    }
+    public async Task<ActionResult<ApiResponse<ProxyTestResultDto>>> TestQuick([FromBody] CreateProxyEndpointRequest? request, CancellationToken cancellationToken) =>
+        Success(await sender.Send(new TestProxyEndpointCommand(null, request?.BindAddress ?? "127.0.0.1", request?.Port ?? 1080, request?.Protocol ?? "Socks5"), cancellationToken));
 }

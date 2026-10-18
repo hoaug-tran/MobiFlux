@@ -6,21 +6,30 @@ using MobiFlux.Domain.Proxies;
 
 namespace MobiFlux.Proxy;
 
-public sealed class ProxyGateway(IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer) : IAsyncDisposable
+public sealed class ProxyGateway(IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer, ProxyTransportOptions? options = null) : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<Guid, ProxyListener> _listeners = new();
+    private readonly SemaphoreSlim _lifecycle = new(1);
+    public int RunningCount => _listeners.Count;
     public bool IsRunning(Guid endpointId) => _listeners.ContainsKey(endpointId);
     public async Task StartAsync(ProxyEndpoint endpoint, CancellationToken cancellationToken)
     {
-        if (!endpoint.Enabled) throw new InvalidOperationException("Disabled endpoints cannot be started.");
-        var listener = ProxyListener.Create(endpoint, routes, tunnels, observer);
-        if (!_listeners.TryAdd(endpoint.Id, listener)) return;
-        try { await listener.StartAsync(cancellationToken); }
-        catch { _listeners.TryRemove(endpoint.Id, out _); await listener.DisposeAsync(); throw; }
+        await _lifecycle.WaitAsync(cancellationToken);
+        try
+        {
+            if (!endpoint.Enabled) throw new InvalidOperationException("Disabled endpoints cannot be started.");
+            if (_listeners.ContainsKey(endpoint.Id)) return;
+            var listener = ProxyListener.Create(endpoint, routes, tunnels, observer, options ?? ProxyTransportOptions.Default);
+            try { await listener.StartAsync(cancellationToken); _listeners[endpoint.Id] = listener; }
+            catch { await listener.DisposeAsync(); throw; }
+        }
+        finally { _lifecycle.Release(); }
     }
     public async Task StopAsync(Guid endpointId)
     {
-        if (_listeners.TryRemove(endpointId, out var listener)) await listener.DisposeAsync();
+        await _lifecycle.WaitAsync();
+        try { if (_listeners.TryRemove(endpointId, out var listener)) await listener.DisposeAsync(); }
+        finally { _lifecycle.Release(); }
     }
     public async ValueTask DisposeAsync()
     {
@@ -32,26 +41,30 @@ internal abstract class ProxyListener : IAsyncDisposable
 {
     private readonly TcpListener _listener;
     private readonly CancellationTokenSource _stop = new();
+    private readonly ConcurrentDictionary<long, Task> _clients = new();
     private Task? _acceptLoop;
-    protected ProxyListener(ProxyEndpoint endpoint, IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer)
+    private long _nextClient;
+    protected ProxyListener(ProxyEndpoint endpoint, IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer, ProxyTransportOptions options)
     {
-        Endpoint = endpoint; Routes = routes; Tunnels = tunnels; Observer = observer;
+        Endpoint = endpoint; Routes = routes; Tunnels = tunnels; Observer = observer; Options = options;
         if (!IPAddress.TryParse(endpoint.BindAddress, out var address)) throw new ArgumentException("Bind address must be an IP address.", nameof(endpoint));
-        if (!IPAddress.IsLoopback(address)) throw new InvalidOperationException("Non-loopback listeners require an explicit LAN security policy.");
+        if (!IPAddress.IsLoopback(address) && (!endpoint.RequiresAuthentication || string.IsNullOrEmpty(endpoint.AllowedClients))) throw new InvalidOperationException("LAN listeners require authentication and allowed client addresses.");
         _listener = new TcpListener(address, endpoint.Port);
     }
     protected ProxyEndpoint Endpoint { get; }
     protected IRouteResolver Routes { get; }
     protected IDeviceTunnelFactory Tunnels { get; }
     protected IProxySessionObserver Observer { get; }
-    public static ProxyListener Create(ProxyEndpoint endpoint, IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer) => endpoint.Protocol switch
+    protected ProxyTransportOptions Options { get; }
+    public static ProxyListener Create(ProxyEndpoint endpoint, IRouteResolver routes, IDeviceTunnelFactory tunnels, IProxySessionObserver observer, ProxyTransportOptions options) => endpoint.Protocol switch
     {
-        ProxyProtocol.Socks5 => new Socks5Listener(endpoint, routes, tunnels, observer),
-        ProxyProtocol.HttpConnect => new HttpConnectListener(endpoint, routes, tunnels, observer),
+        ProxyProtocol.Socks5 => new Socks5Listener(endpoint, routes, tunnels, observer, options),
+        ProxyProtocol.HttpConnect => new HttpConnectListener(endpoint, routes, tunnels, observer, options),
         _ => throw new ArgumentOutOfRangeException(nameof(endpoint))
     };
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _listener.Start(Endpoint.MaxConnections); _acceptLoop = AcceptLoopAsync(_stop.Token); return Task.CompletedTask;
     }
     private async Task AcceptLoopAsync(CancellationToken cancellationToken)
@@ -61,11 +74,15 @@ internal abstract class ProxyListener : IAsyncDisposable
             while (!cancellationToken.IsCancellationRequested)
             {
                 var client = await _listener.AcceptTcpClientAsync(cancellationToken);
-                _ = HandleClientSafelyAsync(client, cancellationToken);
+                if (client.Client.RemoteEndPoint is not IPEndPoint peer || !Endpoint.AllowsClient(peer.Address)) { client.Dispose(); continue; }
+                foreach (var entry in _clients.Where(entry => entry.Value.IsCompleted)) _clients.TryRemove(entry.Key, out _);
+                if (_clients.Count >= Endpoint.MaxConnections) { client.Dispose(); continue; }
+                _clients[Interlocked.Increment(ref _nextClient)] = HandleClientSafelyAsync(client, cancellationToken);
             }
         }
-        catch (OperationCanceledException) { }
-        catch (ObjectDisposedException) { }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested) { }
+        catch (SocketException) when (cancellationToken.IsCancellationRequested) { }
     }
     private async Task HandleClientSafelyAsync(TcpClient client, CancellationToken cancellationToken)
     {
@@ -78,37 +95,59 @@ internal abstract class ProxyListener : IAsyncDisposable
         }
     }
     protected abstract Task HandleClientAsync(NetworkStream client, CancellationToken cancellationToken);
-    protected async Task BridgeAsync(NetworkStream client, string host, int port, Func<CancellationToken, Task> onConnected, CancellationToken cancellationToken)
+    protected async Task BridgeAsync(NetworkStream client, string host, int port, Func<CancellationToken, Task> onConnected, CancellationToken cancellationToken, ReadOnlyMemory<byte> initialData = default)
     {
-        var route = await Routes.ResolveAsync(Endpoint, client.Socket.RemoteEndPoint?.ToString() ?? Guid.NewGuid().ToString("N"), cancellationToken);
+        using var handshake = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        handshake.CancelAfter(Options.ConnectTimeout);
+        var stickyKey = (client.Socket.RemoteEndPoint as IPEndPoint)?.Address.ToString() ?? Guid.NewGuid().ToString("N");
+        var route = await Routes.ResolveAsync(Endpoint, stickyKey, handshake.Token);
         if (route is null) throw new IOException("No eligible cellular device is available.");
-        await using var device = await Tunnels.ConnectAsync(route.DeviceId, host, port, cancellationToken);
-        var session = await Observer.OpenAsync(Endpoint.Id, route.DeviceId, host, port, cancellationToken);
-        await onConnected(cancellationToken);
-        var up = new CountingStream(client); var down = new CountingStream(device);
+        await using var device = await Tunnels.ConnectAsync(route.DeviceId, host, port, handshake.Token);
+        var session = await Observer.OpenAsync(Endpoint.Id, route.DeviceId, host, port, handshake.Token);
+        using var transfer = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        transfer.CancelAfter(Options.IdleTimeout);
+        long bytesUp = 0, bytesDown = 0;
         var reason = "completed";
-        try { await Task.WhenAny(up.CopyToAsync(device, cancellationToken), down.CopyToAsync(client, cancellationToken)); }
-        catch (OperationCanceledException) { reason = "cancelled"; throw; }
+        try
+        {
+            if (!initialData.IsEmpty) { await device.WriteAsync(initialData, handshake.Token); bytesUp += initialData.Length; Observer.RecordTraffic(session, initialData.Length, 0); }
+            await onConnected(handshake.Token);
+            var up = PumpAsync(client, device, count => { bytesUp += count; Observer.RecordTraffic(session, count, 0); transfer.CancelAfter(Options.IdleTimeout); }, transfer.Token);
+            var down = PumpAsync(device, client, count => { bytesDown += count; Observer.RecordTraffic(session, 0, count); transfer.CancelAfter(Options.IdleTimeout); }, transfer.Token);
+            try
+            {
+                var first = await Task.WhenAny(up, down);
+                await first;
+                await Task.WhenAll(up, down);
+            }
+            finally
+            {
+                await transfer.CancelAsync();
+                try { await Task.WhenAll(up, down); } catch { }
+            }
+        }
+        catch (OperationCanceledException) { reason = cancellationToken.IsCancellationRequested ? "cancelled" : "timeout"; throw; }
         catch (Exception) { reason = "transport-failure"; throw; }
-        finally { await Observer.CloseAsync(session, up.BytesWritten, down.BytesWritten, reason, CancellationToken.None); }
+        finally { await Observer.CloseAsync(session, bytesUp, bytesDown, reason, CancellationToken.None); }
+    }
+    private static async Task PumpAsync(Stream source, Stream destination, Action<int> count, CancellationToken token)
+    {
+        var buffer = new byte[81920];
+        while (true)
+        {
+            var read = await source.ReadAsync(buffer, token);
+            if (read == 0) break;
+            await destination.WriteAsync(buffer.AsMemory(0, read), token);
+            count(read);
+        }
+        if (destination is NetworkStream network) network.Socket.Shutdown(SocketShutdown.Send);
+        else if (destination is IHalfCloseStream tunnel) tunnel.ShutdownWrite();
     }
     public async ValueTask DisposeAsync()
     {
-        _stop.Cancel(); _listener.Stop();
+        await _stop.CancelAsync(); _listener.Stop();
         if (_acceptLoop is not null) await _acceptLoop;
+        await Task.WhenAll(_clients.Values);
         _stop.Dispose();
     }
-}
-
-internal sealed class CountingStream(Stream inner) : Stream
-{
-    public long BytesWritten { get; private set; }
-    public override bool CanRead => inner.CanRead; public override bool CanSeek => false; public override bool CanWrite => inner.CanWrite;
-    public override long Length => throw new NotSupportedException(); public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
-    public override void Flush() => inner.Flush(); public override Task FlushAsync(CancellationToken token) => inner.FlushAsync(token);
-    public override int Read(byte[] buffer, int offset, int count) => inner.Read(buffer, offset, count);
-    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token = default) => inner.ReadAsync(buffer, token);
-    public override void Write(byte[] buffer, int offset, int count) { BytesWritten += count; inner.Write(buffer, offset, count); }
-    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken token = default) { BytesWritten += buffer.Length; await inner.WriteAsync(buffer, token); }
-    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException(); public override void SetLength(long value) => throw new NotSupportedException();
 }

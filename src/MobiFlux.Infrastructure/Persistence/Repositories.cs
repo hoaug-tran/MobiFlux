@@ -14,9 +14,11 @@ public sealed class EfMobiFluxRepository(MobiFluxDbContext db) : IDeviceReposito
     public Task<ProxyEndpoint?> GetEndpointAsync(Guid id, CancellationToken token) => db.ProxyEndpoints.SingleOrDefaultAsync(x => x.Id == id, token);
     public async Task<IReadOnlyList<ProxyEndpoint>> ListEndpointsAsync(CancellationToken token) => await db.ProxyEndpoints.OrderBy(x => x.Name).ToListAsync(token);
     public Task AddEndpointAsync(ProxyEndpoint endpoint, CancellationToken token) => db.ProxyEndpoints.AddAsync(endpoint, token).AsTask();
+    public void RemoveEndpoint(ProxyEndpoint endpoint) => db.ProxyEndpoints.Remove(endpoint);
     public Task<ProxyPool?> GetPoolAsync(Guid id, CancellationToken token) => db.ProxyPools.Include(x => x.Members).SingleOrDefaultAsync(x => x.Id == id, token);
     public async Task<IReadOnlyList<ProxyPool>> ListPoolsAsync(CancellationToken token) => await db.ProxyPools.Include(x => x.Members).OrderBy(x => x.Name).ToListAsync(token);
     public Task AddPoolAsync(ProxyPool pool, CancellationToken token) => db.ProxyPools.AddAsync(pool, token).AsTask();
+    public void RemovePool(ProxyPool pool) => db.ProxyPools.Remove(pool);
     public Task SaveChangesAsync(CancellationToken token) => db.SaveChangesAsync(token);
     public async Task AppendBatchAsync(IReadOnlyCollection<ProxySession> sessions, CancellationToken token)
     {

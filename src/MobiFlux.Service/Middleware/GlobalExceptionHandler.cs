@@ -12,6 +12,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             ValidationException validation => (StatusCodes.Status400BadRequest, new ApiError("ValidationFailed", "One or more validation errors occurred.", validation.Errors.GroupBy(error => error.PropertyName).ToDictionary(group => group.Key, group => group.Select(error => error.ErrorMessage).ToArray()))),
             KeyNotFoundException => (StatusCodes.Status404NotFound, new ApiError("NotFound", "The requested resource was not found.")),
+            InvalidOperationException invalid => (StatusCodes.Status409Conflict, new ApiError("InvalidState", invalid.Message)),
             ArgumentException argument => (StatusCodes.Status400BadRequest, new ApiError("InvalidArgument", argument.Message)),
             _ => (StatusCodes.Status500InternalServerError, new ApiError("UnexpectedError", "An unexpected error occurred. Use the correlation ID when contacting support."))
         };

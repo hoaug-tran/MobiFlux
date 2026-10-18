@@ -6,7 +6,7 @@ namespace MobiFlux.Application.Features.Proxies;
 internal static class ProxyDtoMapper
 {
     public static ProxyEndpointDto ToDto(this ProxyEndpoint endpoint, bool running) =>
-        new(endpoint.Id, endpoint.Name, endpoint.BindAddress, endpoint.Port, endpoint.Protocol.ToString(), endpoint.DeviceId, endpoint.PoolId, endpoint.DnsMode.ToString(), endpoint.MaxConnections, endpoint.Enabled, running);
+        new(endpoint.Id, endpoint.Name, endpoint.BindAddress, endpoint.Port, endpoint.Protocol.ToString(), endpoint.DeviceId, endpoint.PoolId, endpoint.DnsMode.ToString(), endpoint.MaxConnections, endpoint.Enabled, running, endpoint.Username, endpoint.AllowedClients);
 
     public static ProxyPoolDto ToDto(this ProxyPool pool) =>
         new(pool.Id, pool.Name, pool.RoutingStrategy.ToString(), pool.StickyTtlSeconds, pool.Enabled,

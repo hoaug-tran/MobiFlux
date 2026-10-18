@@ -61,6 +61,23 @@ public static class MobiFluxSchemaMigrator
         {
             await ExecuteAsync(connection, "CREATE TABLE IF NOT EXISTS \"mobiflux_schema_versions\" (\"Id\" TEXT NOT NULL CONSTRAINT \"PK_mobiflux_schema_versions\" PRIMARY KEY, \"AppliedAt\" TEXT NOT NULL);", cancellationToken);
             var applied = await LoadAppliedIdsAsync(connection, cancellationToken);
+            if (!applied.Contains("202610180001_EndpointAccess"))
+            {
+                var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                await using (var inspect = connection.CreateCommand())
+                {
+                    inspect.CommandText = "PRAGMA table_info(proxy_endpoints);";
+                    await using var reader = await inspect.ExecuteReaderAsync(cancellationToken);
+                    while (await reader.ReadAsync(cancellationToken)) columns.Add(reader.GetString(1));
+                }
+                await using var accessTransaction = await connection.BeginTransactionAsync(cancellationToken);
+                foreach (var column in new[] { "Username", "PasswordHash", "PasswordSalt", "AllowedClients" })
+                {
+                    if (!columns.Contains(column)) await ExecuteAsync(connection, $"ALTER TABLE proxy_endpoints ADD COLUMN {column} TEXT {(column == "AllowedClients" ? "NOT NULL DEFAULT ''" : "NULL")};", cancellationToken, accessTransaction);
+                }
+                await ExecuteAsync(connection, "INSERT INTO mobiflux_schema_versions (Id, AppliedAt) VALUES ('202610180001_EndpointAccess', $at);", cancellationToken, accessTransaction, ("$at", DateTimeOffset.UtcNow.ToString("O")));
+                await accessTransaction.CommitAsync(cancellationToken);
+            }
             foreach (var migration in Migrations.Where(migration => !applied.Contains(migration.Id)))
             {
                 await using var transaction = await connection.BeginTransactionAsync(cancellationToken);

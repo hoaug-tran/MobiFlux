@@ -16,10 +16,12 @@ public static class DependencyInjection
         var routing = configuration.GetRequiredSection(RoutingOptions.SectionName).Get<RoutingOptions>() ?? throw new InvalidOperationException("Routing configuration is required.");
         var sessions = configuration.GetRequiredSection(SessionPersistenceOptions.SectionName).Get<SessionPersistenceOptions>() ?? throw new InvalidOperationException("Session configuration is required.");
         var api = configuration.GetRequiredSection(ApiOptions.SectionName).Get<ApiOptions>() ?? throw new InvalidOperationException("API configuration is required.");
+        var telemetry = configuration.GetSection(TelemetryOptions.SectionName).Get<TelemetryOptions>() ?? new TelemetryOptions();
         if (!Enum.TryParse<DnsMode>(proxy.DefaultDnsMode, true, out var dnsMode)) throw new InvalidOperationException("Proxy default DNS mode is invalid.");
         services.AddSingleton<IProxyDefaults>(new ProxyDefaults(proxy.DefaultMaxConnections, dnsMode));
+        services.AddSingleton(new MobiFlux.Proxy.ProxyTransportOptions(TimeSpan.FromSeconds(proxy.ConnectTimeoutSeconds), TimeSpan.FromSeconds(proxy.IdleTimeoutSeconds)));
         services.AddSingleton<IApiRequestLimits>(new ApiRequestLimits(api.MaximumPageSize));
-        return services.AddMobiFluxInfrastructure(storage.DatabasePath, adb.ExecutablePath, adb.AgentForwardPortStart, routing.MaxStickyEntries, sessions.BufferCapacity);
+        return services.AddMobiFluxInfrastructure(storage.DatabasePath, adb.ExecutablePath, adb.AgentForwardPortStart, routing.MaxStickyEntries, sessions.BufferCapacity, telemetry.HistorySamples);
     }
 
     private sealed class ProxyDefaults(int maxConnections, DnsMode dnsMode) : IProxyDefaults

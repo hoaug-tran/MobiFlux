@@ -10,7 +10,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
-import androidx.annotation.RequiresApi
 
 class CellularProxyService : Service() {
     private lateinit var connectivity: ConnectivityManager
@@ -32,9 +31,8 @@ class CellularProxyService : Service() {
         val request = NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build()
         connectivity.requestNetwork(request, callback!!)
     }
-    override fun onDestroy() { callback?.let { connectivity.unregisterNetworkCallback(it) }; tunnel?.close(); control?.close(); super.onDestroy() }
+    override fun onDestroy() { state.clear(); callback?.let { connectivity.unregisterNetworkCallback(it) }; tunnel?.close(); control?.close(); super.onDestroy() }
     override fun onBind(intent: Intent?): IBinder? = null
-    @RequiresApi(26)
     private fun notification(): android.app.Notification {
         val manager = getSystemService(NotificationManager::class.java); val channel = NotificationChannel("mobiflux", "MobiFlux cellular proxy", NotificationManager.IMPORTANCE_LOW); manager.createNotificationChannel(channel)
         return android.app.Notification.Builder(this, "mobiflux").setContentTitle("MobiFlux Agent").setContentText("Cellular-only proxy node active").setSmallIcon(android.R.drawable.stat_sys_upload).build()

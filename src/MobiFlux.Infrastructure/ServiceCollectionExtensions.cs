@@ -13,7 +13,7 @@ namespace MobiFlux.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddMobiFluxInfrastructure(this IServiceCollection services, string databasePath, string adbExecutable, int agentForwardPortStart, int maxStickyEntries, int sessionBufferCapacity)
+    public static IServiceCollection AddMobiFluxInfrastructure(this IServiceCollection services, string databasePath, string adbExecutable, int agentForwardPortStart, int maxStickyEntries, int sessionBufferCapacity, int historySamples = 180)
     {
         var directory = Path.GetDirectoryName(databasePath); if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
         services.AddDbContext<MobiFluxDbContext>(options => options.UseSqlite($"Data Source={databasePath}"));
@@ -22,14 +22,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProxyRepository>(provider => provider.GetRequiredService<EfMobiFluxRepository>());
         services.AddScoped<IProxySessionRepository>(provider => provider.GetRequiredService<EfMobiFluxRepository>());
         services.AddSingleton<IAdbClient>(_ => new AdbClient(adbExecutable));
+        services.AddSingleton<IProxyConnectivityProbe, ProxyConnectivityProbe>();
+        services.AddSingleton<IRotationHistory>(_ => new RotationHistory(Path.GetFullPath(databasePath) + ".rotations.json"));
+        services.AddSingleton<IDeviceEgressProbe, DeviceEgressProbe>();
         services.AddSingleton(new AgentForwardRegistry(agentForwardPortStart)); services.AddSingleton<IDeviceTunnelFactory, AgentTunnelFactory>();
-        services.AddSingleton<AgentStatusProbe>(); services.AddSingleton<IAdbForwarder>(provider => (IAdbForwarder)provider.GetRequiredService<IAdbClient>());
+        services.AddSingleton<IAgentStatusProbe, AgentStatusProbe>(); services.AddSingleton<IAdbForwarder>(provider => (IAdbForwarder)provider.GetRequiredService<IAdbClient>());
         services.AddSingleton<CachedRouteResolver>(provider => new CachedRouteResolver(provider.GetRequiredService<TimeProvider>(), maxStickyEntries));
         services.AddSingleton<IRouteResolver>(provider => provider.GetRequiredService<CachedRouteResolver>());
         services.AddSingleton(new ProxySessionBuffer(sessionBufferCapacity));
         services.AddSingleton<IProxySessionQueue>(provider => provider.GetRequiredService<ProxySessionBuffer>());
         services.AddSingleton<BufferedProxySessionObserver>();
-        services.AddSingleton<IProxySessionObserver>(provider => new ConnectionTrackingProxySessionObserver(provider.GetRequiredService<BufferedProxySessionObserver>(), provider.GetRequiredService<CachedRouteResolver>()));
+        services.AddSingleton<RuntimeTelemetry>(provider => new RuntimeTelemetry(provider.GetRequiredService<TimeProvider>(), historySamples, provider.GetRequiredService<CachedRouteResolver>(), () => provider.GetRequiredService<ProxyGateway>().RunningCount));
+        services.AddSingleton<IRuntimeTelemetry>(provider => provider.GetRequiredService<RuntimeTelemetry>());
+        services.AddSingleton<IProxySessionObserver>(provider => new ConnectionTrackingProxySessionObserver(provider.GetRequiredService<BufferedProxySessionObserver>(), provider.GetRequiredService<CachedRouteResolver>(), provider.GetRequiredService<RuntimeTelemetry>()));
         services.AddSingleton<IProxyRuntime, ProxyRuntime>();
         return services;
     }

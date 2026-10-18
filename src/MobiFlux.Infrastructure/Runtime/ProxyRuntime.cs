@@ -8,6 +8,7 @@ namespace MobiFlux.Infrastructure.Runtime;
 
 public sealed class ProxyRuntime(ProxyGateway gateway, CachedRouteResolver routes) : IProxyRuntime
 {
+    public void RefreshRoutes(IReadOnlyList<DeviceNode> devices, IReadOnlyList<ProxyPool> pools) => routes.Refresh(devices, pools);
     public bool IsRunning(Guid endpointId) => gateway.IsRunning(endpointId);
     public async Task StartAsync(ProxyEndpoint endpoint, IReadOnlyList<DeviceNode> devices, IReadOnlyList<ProxyPool> pools, CancellationToken cancellationToken)
     {

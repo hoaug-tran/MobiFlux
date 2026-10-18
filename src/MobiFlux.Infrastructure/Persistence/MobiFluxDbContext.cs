@@ -18,7 +18,7 @@ public sealed class MobiFluxDbContext(DbContextOptions<MobiFluxDbContext> option
     {
         model.Entity<DeviceNode>(entity => { entity.ToTable("devices"); entity.HasKey(x => x.Id); entity.HasIndex(x => x.AdbSerial).IsUnique(); });
         model.Entity<DeviceCapabilities>(entity => { entity.ToTable("device_capabilities"); entity.HasKey(x => x.DeviceId); });
-        model.Entity<ProxyEndpoint>(entity => { entity.ToTable("proxy_endpoints"); entity.HasKey(x => x.Id); entity.HasIndex(x => new { x.BindAddress, x.Port }).IsUnique(); });
+        model.Entity<ProxyEndpoint>(entity => { entity.ToTable("proxy_endpoints"); entity.HasKey(x => x.Id); entity.Ignore(x => x.RequiresAuthentication); entity.HasIndex(x => new { x.BindAddress, x.Port }).IsUnique(); });
         model.Entity<ProxyPool>(entity => { entity.ToTable("proxy_pools"); entity.HasKey(x => x.Id); entity.HasMany(x => x.Members).WithOne().HasForeignKey(x => x.PoolId); });
         model.Entity<ProxyPoolMember>(entity => { entity.ToTable("proxy_pool_members"); entity.HasKey(x => new { x.PoolId, x.DeviceId }); });
         model.Entity<ProxySession>(entity =>

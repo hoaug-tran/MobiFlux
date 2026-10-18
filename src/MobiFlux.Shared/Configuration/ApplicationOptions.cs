@@ -45,3 +45,9 @@ public sealed class ApiOptions
     public const string SectionName = "Api";
     [Range(1, 10_000)] public int MaximumPageSize { get; init; }
 }
+public sealed class TelemetryOptions
+{
+    public const string SectionName = "Telemetry";
+    [Range(250, 10000)] public int SampleIntervalMilliseconds { get; init; } = 1000;
+    [Range(30, 3600)] public int HistorySamples { get; init; } = 180;
+}

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using MobiFlux.Application.Abstractions;
 using MobiFlux.Proxy;
 
@@ -11,12 +12,12 @@ public sealed class AgentForwardRegistry
     private readonly ConcurrentDictionary<Guid, int> _ports = new();
     private int _nextPort;
     public AgentForwardRegistry(int firstPort) => _nextPort = firstPort - 2;
-    public int GetOrAssign(Guid deviceId) => _ports.GetOrAdd(deviceId, _ => Interlocked.Add(ref _nextPort, 2) - 2);
+    public int GetOrAssign(Guid deviceId) => _ports.GetOrAdd(deviceId, _ => Interlocked.Add(ref _nextPort, 2));
     public void Set(Guid deviceId, int localPort) => _ports[deviceId] = localPort;
     public bool TryGet(Guid deviceId, out int localPort) => _ports.TryGetValue(deviceId, out localPort);
 }
 
-public sealed class AgentStatusProbe(IAdbForwarder adb, AgentForwardRegistry forwards)
+public sealed class AgentStatusProbe(IAdbForwarder adb, AgentForwardRegistry forwards) : IAgentStatusProbe
 {
     public async Task<bool> ProbeCellularAsync(string serial, Guid deviceId, CancellationToken cancellationToken)
     {
@@ -25,9 +26,11 @@ public sealed class AgentStatusProbe(IAdbForwarder adb, AgentForwardRegistry for
         await adb.ForwardAsync(serial, controlPort, 18_081, cancellationToken);
         forwards.Set(deviceId, tunnelPort);
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-        var response = await client.GetAsync($"http://127.0.0.1:{controlPort}/agent/status", cancellationToken);
+        using var response = await client.GetAsync($"http://127.0.0.1:{controlPort}/agent/status", cancellationToken);
         if (!response.IsSuccessStatusCode) return false;
-        return (await response.Content.ReadAsStringAsync(cancellationToken)).Contains("\"cellularAvailable\":true", StringComparison.Ordinal);
+        using var status = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+        return new[] { "cellularAvailable", "canProxyTcp", "canResolveDnsOnCellular", "failClosed" }
+            .All(name => status.RootElement.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.True);
     }
 }
 
@@ -35,6 +38,7 @@ public sealed class AgentTunnelFactory(AgentForwardRegistry forwards) : IDeviceT
 {
     public async Task<Stream> ConnectAsync(Guid deviceId, string destinationHost, int destinationPort, CancellationToken cancellationToken)
     {
+        if (destinationPort is < 1 or > 65535) throw new ArgumentOutOfRangeException(nameof(destinationPort));
         if (!forwards.TryGet(deviceId, out var port)) throw new IOException("Android agent port forward is not available.");
         var client = new TcpClient();
         try
@@ -53,8 +57,9 @@ public sealed class AgentTunnelFactory(AgentForwardRegistry forwards) : IDeviceT
         }
         catch { client.Dispose(); throw; }
     }
-    private sealed class OwnedNetworkStream(TcpClient client, NetworkStream inner) : Stream
+    private sealed class OwnedNetworkStream(TcpClient client, NetworkStream inner) : Stream, IHalfCloseStream
     {
+        public void ShutdownWrite() => client.Client.Shutdown(SocketShutdown.Send);
         public override bool CanRead => inner.CanRead; public override bool CanSeek => false; public override bool CanWrite => inner.CanWrite; public override long Length => throw new NotSupportedException(); public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
         public override void Flush() => inner.Flush(); public override Task FlushAsync(CancellationToken token) => inner.FlushAsync(token); public override int Read(byte[] b, int o, int c) => inner.Read(b, o, c); public override ValueTask<int> ReadAsync(Memory<byte> b, CancellationToken t = default) => inner.ReadAsync(b, t);
         public override void Write(byte[] b, int o, int c) => inner.Write(b, o, c); public override ValueTask WriteAsync(ReadOnlyMemory<byte> b, CancellationToken t = default) => inner.WriteAsync(b, t); public override long Seek(long o, SeekOrigin s) => throw new NotSupportedException(); public override void SetLength(long v) => throw new NotSupportedException();
