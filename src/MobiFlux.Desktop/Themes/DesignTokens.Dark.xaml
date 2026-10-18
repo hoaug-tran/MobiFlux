@@ -10,7 +10,7 @@
   <Color x:Key="Color.Text">#FAFAFA</Color>
   <Color x:Key="Color.TextSecondary">#D4D4D8</Color>
   <Color x:Key="Color.Muted">#A1A1AA</Color>
-  <Color x:Key="Color.Accent">#3B82F6</Color>
+  <Color x:Key="Color.Accent">#2563EB</Color>
   <Color x:Key="Color.AccentHover">#60A5FA</Color>
   <Color x:Key="Color.AccentMuted">#27272A</Color>
   <Color x:Key="Color.Success">#22C55E</Color>

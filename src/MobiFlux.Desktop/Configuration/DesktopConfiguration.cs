@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.Extensions.Configuration;
 
 namespace MobiFlux.Desktop.Configuration;
@@ -11,6 +12,20 @@ public sealed class ServiceConnectionOptions
 public static class DesktopConfiguration
 {
     private static string? _overrideLanguage;
+    private static readonly string PreferencesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MobiFlux", "desktop.json");
+    public static DesktopPreferences LoadPreferences()
+    {
+        try { return System.Text.Json.JsonSerializer.Deserialize<DesktopPreferences>(File.ReadAllText(PreferencesPath)) ?? new(null, null); }
+        catch (IOException) { return new(null, null); }
+        catch (System.Text.Json.JsonException) { return new(null, null); }
+    }
+    public static void SavePreferences(DesktopPreferences preferences)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(PreferencesPath)!);
+        var temporary = PreferencesPath + ".tmp";
+        File.WriteAllText(temporary, System.Text.Json.JsonSerializer.Serialize(preferences));
+        File.Move(temporary, PreferencesPath, overwrite: true);
+    }
 
     public static ServiceConnectionOptions Load()
     {
@@ -47,3 +62,5 @@ public static class DesktopConfiguration
             .AddEnvironmentVariables(prefix: "MOBIFLUX_")
             .Build();
 }
+
+public sealed record DesktopPreferences(string? ApiAddress, string? AdvertisedAddress, bool AutoRefresh = true, string? ServiceExecutable = null, string Theme = "Light");
