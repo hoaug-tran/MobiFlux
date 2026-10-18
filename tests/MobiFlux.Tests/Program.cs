@@ -16,5 +16,8 @@ Check(DeviceEligibility.CanProxy(device, capabilities), "ready device with cellu
 var noDnsCapabilities = new DeviceCapabilities { DeviceId = device.Id, CanProxyTcp = true, CanResolveDnsOnCellular = false };
 Check(!DeviceEligibility.CanProxy(device, noDnsCapabilities), "missing cellular DNS fails closed");
 
+await ProxyFlowChecks.RunAsync(failures);
+await ReconciliationChecks.RunAsync(failures);
+if (args.Length == 2 && args[0] == "--hub") await LiveHubChecks.RunAsync(args[1], failures);
 if (failures.Count > 0) { Console.Error.WriteLine(string.Join(Environment.NewLine, failures)); return 1; }
-Console.WriteLine("MobiFlux domain checks passed."); return 0;
+Console.WriteLine("MobiFlux domain, proxy flow and reconciliation checks passed."); return 0;

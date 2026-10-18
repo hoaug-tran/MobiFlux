@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
   <ItemGroup><ProjectReference Include="..\..\src\MobiFlux.Application\MobiFlux.Application.csproj" /><ProjectReference Include="..\..\src\MobiFlux.Domain\MobiFlux.Domain.csproj" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\..\src\MobiFlux.Proxy\MobiFlux.Proxy.csproj" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\..\src\MobiFlux.Infrastructure\MobiFlux.Infrastructure.csproj" /><PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" /></ItemGroup>
 </Project>
