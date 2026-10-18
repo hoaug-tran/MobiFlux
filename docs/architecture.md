@@ -28,6 +28,6 @@ src/
 
 ## Current feature truth
 
-Implemented: device registration/reconciliation, endpoint CRUD/start/stop, direct and pool selection in the data plane, Android cellular tunnel protocol, standard error/logging pipeline, and dashboard overview.
+Implemented: device registration/reconciliation, endpoint CRUD/start/stop, direct and pool selection in the data plane, Android cellular tunnel protocol, standard error/logging pipeline, and dashboard overview. Proxy HTTPS tests and rotation/history dispatch through application commands/queries. See [the current validation report](proxy-hardening-2026-10-18.md).
 
-Still required before calling the product feature-complete: persisted health/session/traffic/audit models, SOCKS/HTTP authentication, DPAPI credentials, rotation/recovery/retry policies, full pool CRUD/sticky/failover policy management, LAN ACL/rate limits, RBAC/API keys, backup/restore, analytics and all desktop detail pages. These remain explicit roadmap work, not hidden behind a “done” claim.
+Completed sessions and byte totals are persisted, and SignalR publishes active connections and traffic samples. Proxy listeners support credentials with salted password hashes and explicit LAN client ACLs. Rotation uses device-specific egress probes and persisted history. Remaining work includes real-device validation, health/audit persistence, recovery policies, pool deletion, rate limits, control API authorization, backup/restore and packaged distributions.
