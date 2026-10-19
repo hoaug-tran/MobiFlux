@@ -17,6 +17,7 @@ public static class DesktopConfiguration
     {
         try { return System.Text.Json.JsonSerializer.Deserialize<DesktopPreferences>(File.ReadAllText(PreferencesPath)) ?? new(null, null); }
         catch (IOException) { return new(null, null); }
+        catch (UnauthorizedAccessException) { return new(null, null); }
         catch (System.Text.Json.JsonException) { return new(null, null); }
     }
     public static void SavePreferences(DesktopPreferences preferences)

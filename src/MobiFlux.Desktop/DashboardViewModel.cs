@@ -81,6 +81,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string bytesUp = "0 B";
     [ObservableProperty] private string bytesDown = "0 B";
     [ObservableProperty] private string sessionPageLabel = "Trang 1";
+    [ObservableProperty] private Guid? sessionEndpointId;
+    [ObservableProperty] private Guid? sessionDeviceId;
     private int _sessionPage = 1;
     private int _sessionTotal;
     public string[] Protocols { get; } = ["Socks5", "HttpConnect"];
@@ -134,8 +136,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         if (AutoRefresh && !IsBusy && !_refreshingConfiguration && !ProxyDialogOpen && !DeviceDialogOpen && !PoolDialogOpen && CurrentTab is not ("Routing" or "Settings" or "Rotation"))
         {
             _refreshingConfiguration = true;
-            try { await RefreshCoreAsync(background: true); }
-            catch (Exception exception) { StatusMessage = exception.Message; }
+            try { await RefreshCoreAsync(background: true); _lastBackgroundError = null; }
+            catch (Exception exception) { var message = UserMessage(exception); StatusMessage = message; if (_lastBackgroundError != message) { Notify(message, true); Log("ERROR", $"{exception.GetType().Name}: {UserMessage(exception)}"); _lastBackgroundError = message; } }
             finally { _refreshingConfiguration = false; }
         }
         if (!_connectingHub && _hub?.State is null or HubConnectionState.Disconnected) await ConnectLiveAsync();
@@ -164,6 +166,17 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         if (!Uri.TryCreate(address, UriKind.Absolute, out var uri) || !uri.IsLoopback || uri.Scheme != "http") throw new ArgumentException("API điều khiển phải là HTTP loopback trên máy Windows.");
         return new HttpClient { BaseAddress = uri, Timeout = TimeSpan.FromSeconds(100) };
     }
+    [ObservableProperty] private string notificationMessage = "";
+    [ObservableProperty] private string notificationTitle = "";
+    [ObservableProperty] private bool notificationOpen;
+    private string? _lastBackgroundError;
+    private void Notify(string message, bool error = false)
+    {
+        NotificationTitle = error ? "Chưa hoàn tất thao tác" : "Kết quả thao tác";
+        NotificationMessage = message;
+        NotificationOpen = true;
+    }
+    [RelayCommand] private void DismissNotification() => NotificationOpen = false;
     private void Log(string level, string message)
     {
         Logs.Insert(0, new(DateTimeOffset.Now.ToString("HH:mm:ss"), level, message));
@@ -174,9 +187,10 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         if (IsBusy) return;
         IsBusy = true;
         Interlocked.Increment(ref _configurationGeneration);
-        try { await action(); if (success is not null) { StatusMessage = success; Log("INFO", success); } }
+        var previousMessage = StatusMessage;
+        try { await action(); if (success is not null) { StatusMessage = success; Log("INFO", success); } if (StatusMessage != previousMessage) Notify(StatusMessage); }
         catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
-        catch (Exception exception) { StatusMessage = exception is HttpRequestException ? "Không kết nối được dịch vụ." : exception is OperationCanceledException ? "Hết thời gian chờ." : exception.Message; Log("ERROR", exception.Message); }
+        catch (Exception exception) { StatusMessage = UserMessage(exception); Notify(StatusMessage, true); Log("ERROR", $"{exception.GetType().Name}: {UserMessage(exception)}"); }
         finally { IsBusy = false; }
     }
     private async Task<T> ReadAsync<T>(string route)
@@ -189,9 +203,12 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private static async Task EnsureAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode) return;
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+        ApiResponse<object>? body = null;
+        try { body = await response.Content.ReadFromJsonAsync<ApiResponse<object>>(); }
+        catch (JsonException) { }
+        catch (NotSupportedException) { }
         var details = body?.Error?.ValidationErrors is { } errors ? string.Join("; ", errors.Values.SelectMany(value => value)) : body?.Error?.Message;
-        throw new IOException($"{(int)response.StatusCode}: {details ?? response.ReasonPhrase}");
+        throw new IOException($"{details ?? "Dịch vụ chưa xử lý được yêu cầu. Thử lại sau."} Mã tra cứu: {body?.CorrelationId ?? response.StatusCode.ToString()}");
     }
     private async Task SendAsync(HttpMethod method, string route, object? body = null)
     {
@@ -252,7 +269,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             var endpointTask = ReadAsync<List<ProxyEndpointDto>>(ApiRoutes.Proxies);
             var poolTask = ReadAsync<List<ProxyPoolDto>>(ApiRoutes.Pools);
             var trafficTask = ReadAsync<ProxyTrafficSummaryDto>(ApiRoutes.ProxyTraffic);
-            var sessionsTask = ReadAsync<PagedResult<ProxySessionDto>>($"{ApiRoutes.ProxySessions}?page={_sessionPage}&pageSize=50");
+            var sessionsTask = ReadAsync<PagedResult<ProxySessionDto>>($"{ApiRoutes.ProxySessions}?page={_sessionPage}&pageSize=50&endpointId={SessionEndpointId}&deviceId={SessionDeviceId}");
             var rotationsTask = ReadAsync<List<RotationResultDto>>($"{ApiRoutes.Rotation}/history");
             await Task.WhenAll(deviceTask, endpointTask, poolTask, trafficTask, sessionsTask, rotationsTask);
             if (background && (IsBusy || generation != Interlocked.Read(ref _configurationGeneration) || ProxyDialogOpen || DeviceDialogOpen || PoolDialogOpen)) return;
@@ -269,7 +286,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             Replace(Rotations, await rotationsTask);
             ServiceOnline = true; LastSync = DateTime.Now.ToString("HH:mm:ss");
             OnPropertyChanged(nameof(ActiveProxies)); OnPropertyChanged(nameof(ActiveDevices)); OnPropertyChanged(nameof(ConnectionString));
-            StatusMessage = $"Đã cập nhật lúc {LastSync}.";
+            if (!background) StatusMessage = $"Đã cập nhật lúc {LastSync}.";
         }
         catch { ServiceOnline = false; throw; }
     }
@@ -318,7 +335,14 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         await SendAsync(HttpMethod.Post, ApiRoutes.Devices, new RegisterDeviceRequest(NewDeviceSerial.Trim(), NewDeviceName.Trim()));
         CloseDialogs(); await RefreshCoreAsync();
     }, "Đã đăng ký điện thoại; bấm Quét ADB để kiểm tra.");
-    [RelayCommand] private void OpenPool() { NewPoolName = $"Pool-{Pools.Count + 1}"; foreach (var member in Members) member.Selected = false; PoolDialogOpen = true; }
+    [RelayCommand] private Task DeletePoolAsync() => ExecuteAsync(async () =>
+    {
+        var pool = SelectedPool ?? throw new InvalidOperationException("Chọn pool cần xóa.");
+        if (MessageBox.Show($"Xóa pool {pool.Name}? Không thể hoàn tác. Pool đang được proxy sử dụng sẽ được giữ lại.", "Xóa pool", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+        await SendAsync(HttpMethod.Delete, $"{ApiRoutes.Pools}/{pool.Id}");
+        await RefreshCoreAsync();
+        StatusMessage = "Đã xóa pool.";
+    });    [RelayCommand] private void OpenPool() { NewPoolName = $"Pool-{Pools.Count + 1}"; foreach (var member in Members) member.Selected = false; PoolDialogOpen = true; }
     private ProxyPoolMemberRequest[] SelectedMembers() => Members.Where(member => member.Selected).Select(member => new ProxyPoolMemberRequest(member.Id, ReadNumber(member.Weight, "Trọng số", 1, 10000), ReadNumber(member.Priority, "Ưu tiên", 0, int.MaxValue))).ToArray();
     [RelayCommand] private Task SavePoolAsync() => ExecuteAsync(async () =>
     {
@@ -334,7 +358,9 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(HasEndpoint))] private Task TestProxyAsync() => ExecuteAsync(async () =>
     {
         var endpoint = SelectedEndpoint ?? throw new InvalidOperationException("Chọn proxy cần kiểm tra.");
-        using var response = await _api.PostAsJsonAsync($"{ApiRoutes.Proxies}/{endpoint.Id}/test", new ProxyProbeCredentials(endpoint.Username, ProxyPassword), _lifetime.Token);
+        var credentials = new ProxyProbeCredentials(endpoint.Username, ProxyPassword);
+        ProxyPassword = "";
+        using var response = await _api.PostAsJsonAsync($"{ApiRoutes.Proxies}/{endpoint.Id}/test", credentials, _lifetime.Token);
         await EnsureAsync(response);
         var body = await response.Content.ReadFromJsonAsync<ApiResponse<ProxyTestResultDto>>(_lifetime.Token);
         var result = body?.Data ?? throw new IOException("Không nhận được kết quả kiểm tra.");
@@ -361,14 +387,17 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         var body = await response.Content.ReadFromJsonAsync<ApiResponse<PingResultDto>>(_lifetime.Token);
         PingResult = body?.Data is { } result ? $"{result.Host} → {result.IpAddress}: {result.Status}, {result.RoundTripTimeMs} ms" : "Không có kết quả ping.";
     });
+    [RelayCommand] private Task ApplySessionFiltersAsync() => ExecuteAsync(async () => { _sessionPage = 1; await RefreshCoreAsync(); });
+    [RelayCommand] private Task ClearSessionFiltersAsync() => ExecuteAsync(async () => { SessionEndpointId = null; SessionDeviceId = null; _sessionPage = 1; await RefreshCoreAsync(); });
     [RelayCommand] private Task NextSessionsAsync() => ExecuteAsync(async () => { if (_sessionPage * 50 < _sessionTotal) _sessionPage++; await RefreshCoreAsync(); });
     [RelayCommand] private Task PreviousSessionsAsync() => ExecuteAsync(async () => { _sessionPage = Math.Max(1, _sessionPage - 1); await RefreshCoreAsync(); });
     [RelayCommand] private Task SaveSettingsAsync() => ExecuteAsync(async () =>
     {
         var client = CreateClient(ApiAddress);
+        try { DesktopConfiguration.SavePreferences(new(ApiAddress, AdvertisedAddress, AutoRefresh, ServiceExecutable, ThemeManager.CurrentTheme.ToString())); }
+        catch { client.Dispose(); throw; }
         if (_hub is not null) { await _hub.DisposeAsync(); _hub = null; }
         _api.Dispose(); _api = client;
-        DesktopConfiguration.SavePreferences(new(ApiAddress, AdvertisedAddress, AutoRefresh, ServiceExecutable, ThemeManager.CurrentTheme.ToString()));
         await RefreshCoreAsync();
         TrafficSamples = Array.Empty<TrafficSampleDto>(); _lastLiveSample = null;
         await ConnectLiveAsync();
@@ -416,14 +445,24 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         throw new IOException("Service chưa sẵn sàng; kiểm tra cổng API và nhật ký.");
     });
     [RelayCommand] private void ToggleLanguage() => LanguageManager.ToggleLanguage();
-    [RelayCommand(CanExecute = nameof(HasEndpoint))] private void CopyConnection() { if (SelectedEndpoint is null) { StatusMessage = "Chọn endpoint trước khi sao chép."; return; } try { Clipboard.SetText(ConnectionString); StatusMessage = "Đã sao chép địa chỉ; nhập mật khẩu riêng trên thiết bị client nếu được yêu cầu."; } catch (Exception exception) { StatusMessage = exception.Message; } }
+    [RelayCommand(CanExecute = nameof(HasEndpoint))] private void CopyConnection() { if (SelectedEndpoint is null) { StatusMessage = "Chọn endpoint trước khi sao chép."; return; } try { Clipboard.SetText(ConnectionString); StatusMessage = "Đã sao chép địa chỉ; nhập mật khẩu riêng trên thiết bị client nếu được yêu cầu."; } catch (Exception exception) { StatusMessage = UserMessage(exception); } }
     [RelayCommand] private void ClearLogs() => Logs.Clear();
     [RelayCommand] private void ExportLogs()
     {
         var dialog = new SaveFileDialog { Filter = "JSON (*.json)|*.json", FileName = $"mobiflux-log-{DateTime.Now:yyyyMMdd-HHmmss}.json" };
         if (dialog.ShowDialog() != true) return;
-        try { System.IO.File.WriteAllText(dialog.FileName, JsonSerializer.Serialize(Logs, new JsonSerializerOptions { WriteIndented = true })); StatusMessage = "Đã xuất nhật ký thao tác."; } catch (Exception exception) { StatusMessage = exception.Message; }
+        try { System.IO.File.WriteAllText(dialog.FileName, JsonSerializer.Serialize(Logs, new JsonSerializerOptions { WriteIndented = true })); StatusMessage = "Đã xuất nhật ký thao tác."; } catch (Exception exception) { StatusMessage = UserMessage(exception); }
     }
+    private static string UserMessage(Exception exception) => exception switch
+    {
+        HttpRequestException => "Không kết nối được MobiFlux Service. Kiểm tra dịch vụ và địa chỉ API rồi thử lại.",
+        OperationCanceledException => "Dịch vụ phản hồi quá lâu. Kiểm tra kết nối rồi thử lại.",
+        JsonException => "Dữ liệu dịch vụ không hợp lệ. Kiểm tra phiên bản ứng dụng và service.",
+        UnauthorizedAccessException => "Không có quyền truy cập tệp hoặc thư mục. Chọn vị trí khác rồi thử lại.",
+        ArgumentException or InvalidOperationException or IOException => exception.Message,
+        _ => "Thao tác chưa hoàn tất. Xem nhật ký để tra cứu lỗi và thử lại."
+    };
+
     private static int ReadNumber(string raw, string field, int minimum, int maximum)
     {
         if (!int.TryParse(raw, out var value) || value < minimum || value > maximum) throw new ArgumentException($"{field} phải là số nguyên từ {minimum} đến {maximum}.");

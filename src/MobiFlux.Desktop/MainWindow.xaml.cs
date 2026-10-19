@@ -9,6 +9,7 @@ namespace MobiFlux.Desktop;
 public partial class MainWindow : FluentWindow
 {
     private readonly DashboardViewModel _viewModel;
+    private bool _sidebarCollapsed;
     public MainWindow()
     {
         InitializeComponent();
@@ -16,8 +17,17 @@ public partial class MainWindow : FluentWindow
         DataContext = _viewModel;
         SourceInitialized += (_, _) => FitInitialWindow();
         Loaded += async (_, _) => await _viewModel.RefreshCommand.ExecuteAsync(null);
-        SizeChanged += (_, _) => SidebarColumn.Width = new GridLength(ActualWidth < 1120 ? 184 : 224);
+        SizeChanged += (_, _) => SidebarColumn.Width = new GridLength(_sidebarCollapsed ? 64 : ActualWidth < 1120 ? 184 : 224);
         Closed += (_, _) => _viewModel.Dispose();
+    }
+
+    private void ToggleSidebar(object sender, RoutedEventArgs e)
+    {
+        _sidebarCollapsed = !_sidebarCollapsed;
+        SidebarColumn.Width = new GridLength(_sidebarCollapsed ? 64 : ActualWidth < 1120 ? 184 : 224);
+        SidebarHeader.Visibility = _sidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        SidebarFooter.Visibility = _sidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        NavigationList.Tag = _sidebarCollapsed;
     }
 
     private void FitInitialWindow()

@@ -9,10 +9,10 @@
   <Color x:Key="Color.Text">#09090B</Color>
   <Color x:Key="Color.TextSecondary">#52525B</Color>
   <Color x:Key="Color.Muted">#71717A</Color>
-  <Color x:Key="Color.Accent">#2563EB</Color>
-  <Color x:Key="Color.AccentHover">#1D4ED8</Color>
-  <Color x:Key="Color.AccentMuted">#EFF6FF</Color>
-  <Color x:Key="Color.Success">#16A34A</Color>
+  <Color x:Key="Color.Accent">#3567BD</Color>
+  <Color x:Key="Color.AccentHover">#28549C</Color>
+  <Color x:Key="Color.AccentMuted">#EDF2FA</Color>
+  <Color x:Key="Color.Success">#167C65</Color>
   <Color x:Key="Color.SuccessMuted">#F0FDF4</Color>
   <Color x:Key="Color.Warning">#D97706</Color>
   <Color x:Key="Color.WarningMuted">#FFFBEB</Color>
@@ -39,10 +39,10 @@
   <SolidColorBrush x:Key="Brush.Danger" Color="{StaticResource Color.Danger}" />
   <SolidColorBrush x:Key="Brush.DangerMuted" Color="{StaticResource Color.DangerMuted}" />
 
-  <CornerRadius x:Key="Radius.Small">6</CornerRadius>
-  <CornerRadius x:Key="Radius.Control">8</CornerRadius>
-  <CornerRadius x:Key="Radius.Panel">10</CornerRadius>
-  <CornerRadius x:Key="Radius.Modal">12</CornerRadius>
+  <CornerRadius x:Key="Radius.Small">3</CornerRadius>
+  <CornerRadius x:Key="Radius.Control">4</CornerRadius>
+  <CornerRadius x:Key="Radius.Panel">5</CornerRadius>
+  <CornerRadius x:Key="Radius.Modal">6</CornerRadius>
 
   <Thickness x:Key="Space.1">4</Thickness>
   <Thickness x:Key="Space.2">8</Thickness>

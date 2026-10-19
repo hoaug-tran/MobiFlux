@@ -38,20 +38,20 @@
       </Grid.ColumnDefinitions>
       <Border Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,1,0" Padding="12,16">
         <DockPanel>
-          <StackPanel DockPanel.Dock="Top" Margin="12,0,0,20">
+          <StackPanel x:Name="SidebarHeader" DockPanel.Dock="Top" Margin="12,0,0,20">
             <TextBlock Text="MobiFlux" FontSize="23" FontWeight="SemiBold" />
             <TextBlock Text="Cellular proxy manager" Style="{StaticResource Muted}" Margin="0,4,0,0" />
           </StackPanel>
-          <StackPanel DockPanel.Dock="Bottom">
+          <StackPanel x:Name="SidebarFooter" DockPanel.Dock="Bottom">
             <Button Content="Cài đặt" Command="{Binding NavigateCommand}" CommandParameter="Settings" HorizontalAlignment="Stretch" Margin="0,8,0,12" />
             <TextBlock Text="{Binding ServiceStatus}" Style="{StaticResource Muted}" Margin="8,0" />
           </StackPanel>
-          <ListBox IsEnabled="{Binding CanUsePage}" ItemsSource="{Binding Navigation}" SelectedValuePath="Key" SelectedValue="{Binding CurrentTab, Mode=TwoWay}" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.ItemTemplate>
+          <ListBox x:Name="NavigationList" IsEnabled="{Binding CanUsePage}" ItemsSource="{Binding Navigation}" SelectedValuePath="Key" SelectedValue="{Binding CurrentTab, Mode=TwoWay}" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="AutomationProperties.Name" Value="{Binding Title}" /></Style></ListBox.ItemContainerStyle><ListBox.ItemTemplate>
               <DataTemplate>
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" ToolTip="{Binding Title}">
                   <ui:SymbolIcon Symbol="{Binding Icon}" FontSize="18" Margin="0,0,12,0" />
-                  <TextBlock Text="{Binding Title}" FontSize="15" />
+                  <TextBlock Text="{Binding Title}" FontSize="15"><TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
                 </StackPanel>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -64,10 +64,10 @@
           <RowDefinition Height="*" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="24,12,16,4" Background="{DynamicResource Brush.Surface}">
-          <DockPanel LastChildFill="True">
+        <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="12,8,12,4" Background="{DynamicResource Brush.Surface}">
+          <DockPanel LastChildFill="True"><Button DockPanel.Dock="Left" Click="ToggleSidebar" AutomationProperties.Name="Thu gọn hoặc mở rộng thanh điều hướng" ToolTip="Thu gọn / mở rộng thanh điều hướng" Width="36" MinWidth="36" Padding="0"><ui:SymbolIcon Symbol="List24" FontSize="18" /></Button>
             <WrapPanel DockPanel.Dock="Right">
-              <Button Command="{Binding ToggleThemeCommand}" ToolTip="Chuyển giao diện sáng / tối" Width="44" MinWidth="44" Padding="0">
+              <Button Command="{Binding ToggleThemeCommand}" AutomationProperties.Name="Chuyển giao diện sáng hoặc tối" ToolTip="Chuyển giao diện sáng / tối" Width="44" MinWidth="44" Padding="0">
                 <ui:SymbolIcon Symbol="WeatherMoon24" FontSize="19" />
               </Button>
               <Button Content="Làm mới" Command="{Binding RefreshCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
@@ -77,7 +77,7 @@
         </Border>
         <Grid Grid.Row="1" x:Name="PageHost">
           <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Grid Margin="24" IsEnabled="{Binding CanUsePage}">
+            <Grid Margin="12" IsEnabled="{Binding CanUsePage}">
               <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Dashboard}">
                 <DockPanel Margin="0,0,0,20">
                   <WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center">
@@ -258,7 +258,7 @@
                 <TextBlock Text="Pool và định tuyến" Style="{StaticResource Title}" />
                 <WrapPanel>
                   <Button Content="Tạo pool" Style="{StaticResource Button.Primary}" Command="{Binding OpenPoolCommand}" />
-                  <Button Content="Lưu thay đổi" Command="{Binding SavePoolCommand}" />
+                  <Button Content="Lưu thay đổi" Command="{Binding SavePoolCommand}" /><Button Content="Xóa pool" Command="{Binding DeletePoolCommand}" Style="{StaticResource Button.Danger}" />
                 </WrapPanel>
                 <ComboBox ItemsSource="{Binding Pools}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedPool}" />
                 <Border Style="{StaticResource Card}">
@@ -292,6 +292,12 @@
               </StackPanel>
               <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Sessions}">
                 <TextBlock Text="Lịch sử kết nối" Style="{StaticResource Title}" />
+                  <WrapPanel>
+                    <StackPanel Margin="0,0,8,8"><TextBlock Text="Proxy" Style="{StaticResource Muted}" /><ComboBox Width="220" ItemsSource="{Binding Endpoints}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SessionEndpointId}" /></StackPanel>
+                    <StackPanel Margin="0,0,8,8"><TextBlock Text="Điện thoại" Style="{StaticResource Muted}" /><ComboBox Width="220" ItemsSource="{Binding Devices}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SessionDeviceId}" /></StackPanel>
+                    <Button Content="Áp dụng bộ lọc" Command="{Binding ApplySessionFiltersCommand}" VerticalAlignment="Bottom" />
+                    <Button Content="Xóa bộ lọc" Command="{Binding ClearSessionFiltersCommand}" VerticalAlignment="Bottom" />
+                  </WrapPanel>
                 <WrapPanel>
                   <Button Content="Trang trước" Command="{Binding PreviousSessionsCommand}" />
                   <Button Content="Trang sau" Command="{Binding NextSessionsCommand}" />
@@ -491,5 +497,11 @@
         </Border>
       </Grid>
     </Grid>
+    <Border Grid.Row="1" Panel.ZIndex="100" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="16" MaxWidth="440" Padding="16" CornerRadius="5" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Accent}" BorderThickness="1" Visibility="{Binding NotificationOpen, Converter={StaticResource Visible}}" AutomationProperties.LiveSetting="Assertive">
+      <StackPanel>
+        <DockPanel><Button DockPanel.Dock="Right" Command="{Binding DismissNotificationCommand}" AutomationProperties.Name="Đóng thông báo" ToolTip="Đóng thông báo" Width="32" MinWidth="32" Padding="0"><ui:SymbolIcon Symbol="Dismiss24" FontSize="16" /></Button><TextBlock Text="{Binding NotificationTitle}" FontWeight="SemiBold" VerticalAlignment="Center" /></DockPanel>
+        <TextBlock Text="{Binding NotificationMessage}" Margin="0,8,0,0" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
   </Grid>
 </ui:FluentWindow>

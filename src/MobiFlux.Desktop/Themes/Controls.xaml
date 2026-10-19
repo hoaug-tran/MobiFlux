@@ -24,9 +24,9 @@
     <Setter Property="FontSize" Value="{StaticResource Type.Caption}" />
   </Style>
   <Style x:Key="Card" TargetType="Border">
-    <Setter Property="Padding" Value="20" />
+    <Setter Property="Padding" Value="14" />
     <Setter Property="Margin" Value="0,0,0,16" />
-    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="CornerRadius" Value="5" />
     <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Background" Value="{DynamicResource Brush.Surface}" />
@@ -46,7 +46,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Border x:Name="Root" CornerRadius="6" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+          <Border x:Name="Root" CornerRadius="3" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
             <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
           </Border>
           <ControlTemplate.Triggers>
@@ -86,7 +86,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
-          <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+          <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
             <ScrollViewer x:Name="PART_ContentHost" Margin="0" Padding="0" VerticalAlignment="Stretch" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <ControlTemplate.Triggers>
@@ -113,7 +113,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="PasswordBox">
-          <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+          <Border x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
             <ScrollViewer x:Name="PART_ContentHost" Margin="0" Padding="0" VerticalAlignment="Stretch" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
           </Border>
           <ControlTemplate.Triggers>
@@ -144,7 +144,7 @@
             <ToggleButton Style="{x:Null}" OverridesDefaultStyle="True" Focusable="False" IsTabStop="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Width="{Binding ActualWidth, ElementName=ComboRoot}" Height="{Binding ActualHeight, ElementName=ComboRoot}" Margin="0" Padding="0" IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}">
               <ToggleButton.Template>
                 <ControlTemplate TargetType="ToggleButton">
-                  <Border CornerRadius="6" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}">
+                  <Border CornerRadius="3" BorderThickness="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}">
                     <ui:SymbolIcon Symbol="ChevronDown24" FontSize="16" HorizontalAlignment="Right" Margin="0,0,12,0" Foreground="{DynamicResource Brush.Muted}" />
                   </Border>
                 </ControlTemplate>
@@ -153,7 +153,7 @@
             <ContentPresenter IsHitTestVisible="False" Margin="12,0,40,0" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" TextElement.Foreground="{TemplateBinding Foreground}" />
             <TextBlock x:Name="Placeholder" Text="Chọn một mục" Foreground="{DynamicResource Brush.Muted}" Margin="12,0,40,0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed" />
             <Popup x:Name="PART_Popup" Placement="Bottom" PlacementTarget="{Binding ElementName=ComboRoot}" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
-              <Border Width="{Binding ActualWidth, ElementName=ComboRoot}" MinHeight="48" Margin="0,4,0,0" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="6" Padding="4">
+              <Border Width="{Binding ActualWidth, ElementName=ComboRoot}" MinHeight="48" Margin="0,4,0,0" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="3" Padding="4">
                 <ScrollViewer MaxHeight="{TemplateBinding MaxDropDownHeight}" CanContentScroll="True">
                   <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained" />
                 </ScrollViewer>
@@ -222,7 +222,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
-          <Border x:Name="Root" CornerRadius="6" Padding="{TemplateBinding Padding}" Background="Transparent" BorderThickness="1" BorderBrush="Transparent">
+          <Border x:Name="Root" CornerRadius="3" Padding="{TemplateBinding Padding}" Background="Transparent" BorderThickness="1" BorderBrush="Transparent">
             <ContentPresenter />
           </Border>
           <ControlTemplate.Triggers>
