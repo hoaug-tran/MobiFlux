@@ -36,11 +36,25 @@ public sealed class EfMobiFluxRepository(MobiFluxDbContext db) : IDeviceReposito
             .Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(token);
         return new ProxySessionPage(items, filter.Page, filter.PageSize, totalCount);
     }
-    public async Task<ProxyTrafficSummary> GetSummaryAsync(CancellationToken token)
+    public async Task<ProxyTrafficSummary> GetSummaryAsync(DateTimeOffset? since, CancellationToken token)
     {
-        var summary = await db.ProxySessions.AsNoTracking().GroupBy(_ => 1)
-            .Select(group => new { Count = group.Count(), BytesUp = group.Sum(session => session.BytesUp), BytesDown = group.Sum(session => session.BytesDown), MostRecentSessionAt = group.Max(session => (DateTimeOffset?)session.EndedAt) })
+        var query = db.ProxySessions.AsNoTracking().AsQueryable();
+        if (since.HasValue)
+        {
+            query = query.Where(session => session.StartedAt >= since.Value);
+        }
+        var summary = await query.GroupBy(_ => 1)
+            .Select(group => new
+            {
+                Count = group.Count(),
+                BytesUp = group.Sum(session => session.BytesUp),
+                BytesDown = group.Sum(session => session.BytesDown),
+                MostRecentSessionAt = group.Max(session => (DateTimeOffset?)session.EndedAt),
+                FailedCount = group.Count(session => session.CloseReason != "completed")
+            })
             .SingleOrDefaultAsync(token);
-        return summary is null ? new ProxyTrafficSummary(0, 0, 0, null) : new ProxyTrafficSummary(summary.Count, summary.BytesUp, summary.BytesDown, summary.MostRecentSessionAt);
+        return summary is null
+            ? new ProxyTrafficSummary(0, 0, 0, null, 0)
+            : new ProxyTrafficSummary(summary.Count, summary.BytesUp, summary.BytesDown, summary.MostRecentSessionAt, summary.FailedCount);
     }
 }

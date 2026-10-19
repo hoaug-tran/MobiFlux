@@ -16,18 +16,27 @@ public sealed record DeviceDto(
     string? Apn = null,
     string? Iccid = null,
     string? WanIp = null
-);
+)
+{
+    public override string ToString() => string.IsNullOrWhiteSpace(Name) ? AdbSerial : Name;
+}
 
 public sealed record RegisterDeviceRequest(string AdbSerial, string Name);
 public sealed record DeviceStateRequest(bool Enabled);
-public sealed record ProxyEndpointDto(Guid Id, string Name, string BindAddress, int Port, string Protocol, Guid? DeviceId, Guid? PoolId, string DnsMode, int MaxConnections, bool Enabled, bool Running, string? Username = null, string AllowedClients = "");
+public sealed record ProxyEndpointDto(Guid Id, string Name, string BindAddress, int Port, string Protocol, Guid? DeviceId, Guid? PoolId, string DnsMode, int MaxConnections, bool Enabled, bool Running, string? Username = null, string AllowedClients = "")
+{
+    public override string ToString() => Name;
+}
 public sealed record ProxyPoolMemberDto(Guid DeviceId, int Weight, int Priority, bool Enabled);
-public sealed record ProxyPoolDto(Guid Id, string Name, string Strategy, int StickyTtlSeconds, bool Enabled, IReadOnlyList<ProxyPoolMemberDto> Members);
+public sealed record ProxyPoolDto(Guid Id, string Name, string Strategy, int StickyTtlSeconds, bool Enabled, IReadOnlyList<ProxyPoolMemberDto> Members)
+{
+    public override string ToString() => Name;
+}
 public sealed record ProxyPoolMemberRequest(Guid DeviceId, int Weight, int Priority);
 public sealed record ProxySessionDto(Guid Id, Guid EndpointId, Guid DeviceId, string DestinationHost, int DestinationPort, DateTimeOffset StartedAt, DateTimeOffset EndedAt, long BytesUp, long BytesDown, string CloseReason);
-public sealed record ProxyTrafficSummaryDto(int SessionCount, long BytesUp, long BytesDown, DateTimeOffset? MostRecentSessionAt);
+public sealed record ProxyTrafficSummaryDto(int SessionCount, long BytesUp, long BytesDown, DateTimeOffset? MostRecentSessionAt, int FailedSessions = 0, int RotationsCount = 0);
 public sealed record CreateProxyEndpointRequest(string Name, string BindAddress, int Port, string Protocol, Guid? DeviceId, Guid? PoolId, string? Username = null, string? Password = null, string? AllowedClients = null);
-public sealed record UpdateProxyEndpointRequest(string Name, int MaxConnections, bool Enabled);
+public sealed record UpdateProxyEndpointRequest(string Name, string BindAddress, int Port, string Protocol, Guid? DeviceId, Guid? PoolId, int MaxConnections, bool Enabled, string? Username = null, string? Password = null, string? AllowedClients = null);
 public sealed record CreateProxyPoolRequest(string Name, string Strategy, int StickyTtlSeconds, IReadOnlyList<ProxyPoolMemberRequest> Members);
 public sealed record UpdateProxyPoolRequest(string Strategy, int StickyTtlSeconds, bool Enabled, IReadOnlyList<ProxyPoolMemberRequest>? Members = null);
 public sealed record RotationResultDto(string CurrentIp, string PreviousIp, DateTimeOffset ChangedAt, string TriggeredBy, string Duration, string Status, Guid? DeviceId = null, string? DeviceSerial = null);

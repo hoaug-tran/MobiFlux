@@ -51,11 +51,45 @@ public sealed class ProxyEndpoint
         return CryptographicOperations.FixedTimeEquals(candidate, Convert.FromBase64String(PasswordHash)) && string.Equals(username, Username, StringComparison.Ordinal);
     }
     public bool AllowsClient(IPAddress address) => string.IsNullOrEmpty(AllowedClients) || AllowedClients.Split(',').Contains(address.MapToIPv6().ToString(), StringComparer.Ordinal);
-    public void Update(string name, int maxConnections, bool enabled)
+    public void Update(string name, string bindAddress, int port, ProxyProtocol protocol, Guid? deviceId, Guid? poolId, int maxConnections, bool enabled)
     {
         if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 128) throw new ArgumentException("Invalid endpoint name.");
+        if (port is < 1 or > 65535) throw new ArgumentOutOfRangeException(nameof(port));
+        if ((deviceId is null) == (poolId is null)) throw new ArgumentException("An endpoint must target exactly one device or pool.");
         if (maxConnections is < 1 or > 65535) throw new ArgumentOutOfRangeException(nameof(maxConnections));
-        Name = name.Trim(); MaxConnections = maxConnections; Enabled = enabled;
+        if (!IPAddress.TryParse(bindAddress, out _)) throw new ArgumentException("Invalid bind address.");
+        Name = name.Trim();
+        BindAddress = bindAddress.Trim();
+        Port = port;
+        Protocol = protocol;
+        DeviceId = deviceId;
+        PoolId = poolId;
+        MaxConnections = maxConnections;
+        Enabled = enabled;
+    }
+    public void UpdateAccess(string? username, string? password, string? allowedClients)
+    {
+        var clients = (allowedClients ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (clients.Any(client => !IPAddress.TryParse(client, out _))) throw new ArgumentException("Allowed clients must be comma-separated IP addresses.");
+        AllowedClients = string.Join(',', clients.Select(client => IPAddress.Parse(client).MapToIPv6().ToString()));
+
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            Username = null;
+            PasswordHash = null;
+            PasswordSalt = null;
+            return;
+        }
+
+        if (username.Contains(':') || Encoding.UTF8.GetByteCount(username) > 255) throw new ArgumentException("Invalid proxy username.");
+        Username = username.Trim();
+
+        if (!string.IsNullOrEmpty(password))
+        {
+            if (password.Length < 12 || Encoding.UTF8.GetByteCount(password) > 255) throw new ArgumentException("Proxy password must have at least 12 characters and at most 255 UTF-8 bytes.");
+            PasswordSalt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+            PasswordHash = Convert.ToBase64String(Rfc2898DeriveBytes.Pbkdf2(password, Convert.FromBase64String(PasswordSalt), 100_000, HashAlgorithmName.SHA256, 32));
+        }
     }
     public void SetEnabled(bool enabled) => Enabled = enabled;
 }

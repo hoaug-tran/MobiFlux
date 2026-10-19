@@ -36,12 +36,12 @@ public interface IApiRequestLimits
 }
 public sealed record ProxySessionFilter(Guid? EndpointId, Guid? DeviceId, int Page, int PageSize);
 public sealed record ProxySessionPage(IReadOnlyList<ProxySession> Items, int Page, int PageSize, int TotalCount);
-public sealed record ProxyTrafficSummary(int SessionCount, long BytesUp, long BytesDown, DateTimeOffset? MostRecentSessionAt);
+public sealed record ProxyTrafficSummary(int SessionCount, long BytesUp, long BytesDown, DateTimeOffset? MostRecentSessionAt, int FailedSessions = 0);
 public interface IProxySessionRepository
 {
     Task AppendBatchAsync(IReadOnlyCollection<ProxySession> sessions, CancellationToken cancellationToken);
     Task<ProxySessionPage> GetPageAsync(ProxySessionFilter filter, CancellationToken cancellationToken);
-    Task<ProxyTrafficSummary> GetSummaryAsync(CancellationToken cancellationToken);
+    Task<ProxyTrafficSummary> GetSummaryAsync(DateTimeOffset? since = null, CancellationToken cancellationToken = default);
 }
 public interface IProxySessionQueue
 {
