@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
@@ -79,6 +80,8 @@ public sealed class NetworkingController : ApiControllerBase
     public async Task<ActionResult<ApiResponse<PingResultDto>>> PingHost([FromBody] PingRequest request, CancellationToken cancellationToken)
     {
         var host = string.IsNullOrWhiteSpace(request.Host) ? "1.1.1.1" : request.Host.Trim();
+        if (host.Length > 253 || Uri.CheckHostName(host) == UriHostNameType.Unknown) throw new ArgumentException("Host hoặc IP không hợp lệ.");
+        cancellationToken.ThrowIfCancellationRequested();
         try
         {
             using var pinger = new Ping();
@@ -95,7 +98,7 @@ public sealed class NetworkingController : ApiControllerBase
                 reply.Status.ToString()
             ));
         }
-        catch (Exception ex)
+        catch (PingException)
         {
             return Success(new PingResultDto(
                 host,
@@ -103,7 +106,7 @@ public sealed class NetworkingController : ApiControllerBase
                 false,
                 0,
                 0,
-                ex.Message
+                "Không nhận được phản hồi ICMP. Host có thể chặn ping."
             ));
         }
     }

@@ -8,10 +8,11 @@ public sealed class UpdateProxyEndpointHandler(IProxyRepository proxies, IDevice
     {
         var endpoint = await proxies.GetEndpointAsync(command.EndpointId, cancellationToken) ?? throw new KeyNotFoundException("Endpoint was not found.");
         var running = runtime.IsRunning(endpoint.Id);
-        await runtime.StopAsync(endpoint.Id);
+        var restartRequired = endpoint.MaxConnections != command.MaxConnections;
         endpoint.Update(command.Name, command.MaxConnections, command.Enabled);
         await proxies.SaveChangesAsync(cancellationToken);
-        if (running && endpoint.Enabled) await runtime.StartAsync(endpoint, await devices.ListAsync(cancellationToken), await proxies.ListPoolsAsync(cancellationToken), cancellationToken);
+        if (running && (!endpoint.Enabled || restartRequired)) await runtime.StopAsync(endpoint.Id);
+        if (running && endpoint.Enabled && restartRequired) await runtime.StartAsync(endpoint, await devices.ListAsync(cancellationToken), await proxies.ListPoolsAsync(cancellationToken), cancellationToken);
         return endpoint.ToDto(runtime.IsRunning(endpoint.Id));
     }
 }

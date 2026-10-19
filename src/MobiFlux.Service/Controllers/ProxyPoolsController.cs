@@ -1,3 +1,4 @@
+using MobiFlux.Application.Features.Proxies.DeleteProxyPool;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using MobiFlux.Application.Features.Proxies.CreateProxyPool;
@@ -31,4 +32,9 @@ public sealed class ProxyPoolsController(ISender sender) : ApiControllerBase
     [HttpPut("{poolId:guid}")]
     public async Task<ActionResult<ApiResponse<ProxyPoolDto>>> Update(Guid poolId, UpdateProxyPoolRequest request, CancellationToken cancellationToken) =>
         Success(await sender.Send(new UpdateProxyPoolCommand(poolId, request.Strategy, request.StickyTtlSeconds, request.Enabled, request.Members), cancellationToken));
-}
+    [HttpDelete("{poolId:guid}")]
+    public async Task<IActionResult> Delete(Guid poolId, CancellationToken cancellationToken)
+    {
+        await sender.Send(new DeleteProxyPoolCommand(poolId), cancellationToken);
+        return NoContent();
+    }}

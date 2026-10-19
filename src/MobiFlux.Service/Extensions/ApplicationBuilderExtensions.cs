@@ -16,7 +16,7 @@ public static class ApplicationBuilderExtensions
 
     public static WebApplication UseApiPipeline(this WebApplication app)
     {
-        app.UseSerilogRequestLogging(); app.UseMiddleware<CorrelationIdMiddleware>(); app.UseExceptionHandler();
+        app.UseSerilogRequestLogging(); app.UseMiddleware<CorrelationIdMiddleware>(); app.UseExceptionHandler(); app.UseMiddleware<LocalManagementMiddleware>();
         return app;
     }
 }

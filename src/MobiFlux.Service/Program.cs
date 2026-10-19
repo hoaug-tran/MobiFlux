@@ -22,7 +22,18 @@ try
     var app = builder.Build();
     await app.InitializeApiAsync();
     app.UseApiPipeline();
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
     app.MapHealthChecks("/health"); app.MapControllers(); app.MapHub<RuntimeHub>("/hubs/runtime");
+    foreach (var path in new[] { "/", "/devices", "/proxies", "/pools", "/rotation", "/sessions", "/networking", "/settings" })
+        app.MapGet(path, async context =>
+        {
+            var file = app.Environment.WebRootFileProvider.GetFileInfo("index.html");
+            if (!file.Exists) { context.Response.StatusCode = StatusCodes.Status404NotFound; return; }
+            context.Response.ContentType = "text/html; charset=utf-8";
+            context.Response.Headers.CacheControl = "no-cache";
+            await context.Response.SendFileAsync(file, context.RequestAborted);
+        });
     await app.RunAsync();
 }
 catch (Exception exception)

@@ -20,7 +20,11 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<RuntimeReconciliationWorker>();
         services.AddHostedService<ProxySessionPersistenceWorker>();
         services.AddHostedService<RuntimeTelemetryWorker>();
-        services.AddControllers(); services.AddSignalR(); services.AddHealthChecks(); services.AddProblemDetails();
+        services.AddControllers().ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = context =>
+            new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(MobiFlux.Shared.Common.ApiResponse<object>.Fail(
+                new MobiFlux.Shared.Common.ApiError("ValidationFailed", "Thông tin yêu cầu chưa hợp lệ. Kiểm tra dữ liệu và thử lại.",
+                    context.ModelState.Where(entry => entry.Value?.Errors.Count > 0).ToDictionary(entry => entry.Key, entry => entry.Value!.Errors.Select(_ => "Giá trị không đúng định dạng hoặc thiếu trường bắt buộc.").Distinct().ToArray())), context.HttpContext.TraceIdentifier)));
+        services.AddSignalR(); services.AddHealthChecks(); services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         return services;
     }

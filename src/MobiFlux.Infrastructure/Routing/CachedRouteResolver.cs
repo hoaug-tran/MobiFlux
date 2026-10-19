@@ -13,8 +13,8 @@ public sealed class CachedRouteResolver(TimeProvider timeProvider, int maxSticky
     private IReadOnlyDictionary<Guid, ProxyPool> _pools = new Dictionary<Guid, ProxyPool>();
     private readonly ConcurrentDictionary<string, (Guid DeviceId, DateTimeOffset Expires)> _sticky = new();
     private readonly ConcurrentDictionary<Guid, int> _activeConnections = new();
-    private int _roundRobin;
-    private int _weightedRoundRobin;
+    private readonly ConcurrentDictionary<Guid, long> _roundRobin = new();
+    private readonly ConcurrentDictionary<Guid, long> _weightedRoundRobin = new();
     public (int Total, int Ready) Readiness
     {
         get { lock (_sync) return (_devices.Count, _devices.Values.Count(device => device.Enabled && device.ActualState == DeviceActualState.ProxyReady)); }
@@ -35,9 +35,9 @@ public sealed class CachedRouteResolver(TimeProvider timeProvider, int maxSticky
         if (pool.StickyTtlSeconds > 0 && _sticky.TryGetValue(cacheKey, out var stored) && stored.Expires > now && candidates.Any(x => x.DeviceId == stored.DeviceId)) return Task.FromResult<RouteDecision?>(new(stored.DeviceId, "sticky"));
         var chosen = pool.RoutingStrategy switch
         {
-            RoutingStrategy.RoundRobin => candidates[PositiveModulo(Interlocked.Increment(ref _roundRobin), candidates.Length)].DeviceId,
+            RoutingStrategy.RoundRobin => candidates[(int)((ulong)Next(_roundRobin, poolId) % (ulong)candidates.Length)].DeviceId,
             RoutingStrategy.LeastConnections => candidates.OrderBy(candidate => _activeConnections.GetValueOrDefault(candidate.DeviceId)).ThenBy(candidate => candidate.DeviceId).First().DeviceId,
-            RoutingStrategy.WeightedRoundRobin => SelectWeighted(candidates).DeviceId,
+            RoutingStrategy.WeightedRoundRobin => SelectWeighted(poolId, candidates).DeviceId,
             RoutingStrategy.Random => candidates[Random.Shared.Next(candidates.Length)].DeviceId,
             _ => throw new ArgumentOutOfRangeException(nameof(pool.RoutingStrategy))
         };
@@ -49,10 +49,10 @@ public sealed class CachedRouteResolver(TimeProvider timeProvider, int maxSticky
 
     public void ConnectionClosed(Guid deviceId) => _activeConnections.AddOrUpdate(deviceId, 0, static (_, current) => Math.Max(0, current - 1));
 
-    private ProxyPoolMember SelectWeighted(IReadOnlyList<ProxyPoolMember> candidates)
+    private ProxyPoolMember SelectWeighted(Guid poolId, IReadOnlyList<ProxyPoolMember> candidates)
     {
-        var totalWeight = candidates.Sum(candidate => candidate.Weight);
-        var position = PositiveModulo(Interlocked.Increment(ref _weightedRoundRobin), totalWeight);
+        var totalWeight = candidates.Sum(candidate => (long)candidate.Weight);
+        var position = (long)((ulong)Next(_weightedRoundRobin, poolId) % (ulong)totalWeight);
         foreach (var candidate in candidates)
         {
             if (position < candidate.Weight) return candidate;
@@ -72,5 +72,5 @@ public sealed class CachedRouteResolver(TimeProvider timeProvider, int maxSticky
         _sticky[cacheKey] = (deviceId, expires);
     }
 
-    private static int PositiveModulo(int value, int divisor) => (value & int.MaxValue) % divisor;
+    private static long Next(ConcurrentDictionary<Guid, long> counters, Guid poolId) => counters.AddOrUpdate(poolId, 0, static (_, current) => unchecked(current + 1));
 }
