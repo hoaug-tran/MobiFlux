@@ -4,6 +4,12 @@ export interface Pool {id:string;name:string;strategy:string;stickyTtlSeconds:nu
 export interface Session {id:string;endpointId:string;deviceId:string;destinationHost:string;destinationPort:number;startedAt:string;endedAt:string;bytesUp:number;bytesDown:number;closeReason:string}
 export interface Rotation {currentIp:string;previousIp:string;changedAt:string;status:string;duration:string;deviceId:string|null}
 export interface Runtime {at:string;activeConnections:number;bytesUp:number;bytesDown:number;openedSessions:number;completedSessions:number;failedSessions:number;readyDevices:number;runningProxies:number;traffic:{uploadMbps:number;downloadMbps:number}}
+export interface TrafficSummary {sessionCount:number;bytesUp:number;bytesDown:number;mostRecentSessionAt:string|null;failedSessions:number;rotationsCount:number}
+export function formatBytes(bytes:number|undefined):string{
+  if(!bytes||bytes<=0)return '0 B'
+  const k=1024,sizes=['B','KiB','MiB','GiB','TiB'],i=Math.floor(Math.log(bytes)/Math.log(k))
+  return `${parseFloat((bytes/Math.pow(k,i)).toFixed(2))} ${sizes[i]}`
+}
 export class ApiFailure extends Error {code:string;correlationId:string;fields?:Record<string,string[]>;constructor(message:string,code:string,correlationId:string,fields?:Record<string,string[]>){super(message);this.code=code;this.correlationId=correlationId;this.fields=fields}}
 export async function api<T>(path:string,method='GET',body?:unknown,signal?:AbortSignal):Promise<T>{
  const timeout=AbortSignal.timeout(90000)
