@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:contracts="clr-namespace:MobiFlux.Shared.Contracts;assembly=MobiFlux.Shared"
              StartupUri="MainWindow.xaml">
   <Application.Resources>
     <ResourceDictionary>
@@ -12,6 +13,16 @@
         <ResourceDictionary Source="Themes/Controls.xaml" />
         <ResourceDictionary Source="Themes/Strings.vi.xaml" />
       </ResourceDictionary.MergedDictionaries>
+
+      <DataTemplate DataType="{x:Type contracts:DeviceDto}">
+        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type contracts:ProxyEndpointDto}">
+        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+      </DataTemplate>
+      <DataTemplate DataType="{x:Type contracts:ProxyPoolDto}">
+        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+      </DataTemplate>
     </ResourceDictionary>
   </Application.Resources>
 </Application>

@@ -17,16 +17,24 @@ public partial class MainWindow : FluentWindow
         DataContext = _viewModel;
         SourceInitialized += (_, _) => FitInitialWindow();
         Loaded += async (_, _) => await _viewModel.RefreshCommand.ExecuteAsync(null);
-        SizeChanged += (_, _) => SidebarColumn.Width = new GridLength(_sidebarCollapsed ? 64 : ActualWidth < 1120 ? 184 : 224);
+        SizeChanged += (_, _) =>
+        {
+            SidebarColumn.Width = new GridLength(_sidebarCollapsed ? 68 : ActualWidth < 1120 ? 184 : 224);
+            SidebarBorder.Padding = _sidebarCollapsed ? new Thickness(6, 16, 6, 16) : new Thickness(12, 16, 12, 16);
+        };
         Closed += (_, _) => _viewModel.Dispose();
     }
 
     private void ToggleSidebar(object sender, RoutedEventArgs e)
     {
         _sidebarCollapsed = !_sidebarCollapsed;
-        SidebarColumn.Width = new GridLength(_sidebarCollapsed ? 64 : ActualWidth < 1120 ? 184 : 224);
-        SidebarHeader.Visibility = _sidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        SidebarColumn.Width = new GridLength(_sidebarCollapsed ? 68 : ActualWidth < 1120 ? 184 : 224);
+        SidebarBorder.Padding = _sidebarCollapsed ? new Thickness(6, 16, 6, 16) : new Thickness(12, 16, 12, 16);
+        SidebarTitleGroup.Visibility = _sidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
         SidebarFooter.Visibility = _sidebarCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        Grid.SetColumn(ToggleSidebarButton, _sidebarCollapsed ? 0 : 1);
+        Grid.SetColumnSpan(ToggleSidebarButton, _sidebarCollapsed ? 2 : 1);
+        ToggleSidebarButton.HorizontalAlignment = _sidebarCollapsed ? HorizontalAlignment.Center : HorizontalAlignment.Right;
         NavigationList.Tag = _sidebarCollapsed;
     }
 

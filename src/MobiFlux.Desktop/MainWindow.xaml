@@ -28,7 +28,7 @@
     </Grid.RowDefinitions>
     <ui:TitleBar Title="MobiFlux" Height="40">
       <ui:TitleBar.Icon>
-        <ui:SymbolIcon Symbol="Globe24" />
+        <ui:ImageIcon Source="/Assets/logo.png" />
       </ui:TitleBar.Icon>
     </ui:TitleBar>
     <Grid Grid.Row="1">
@@ -36,23 +36,68 @@
         <ColumnDefinition x:Name="SidebarColumn" Width="224" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <Border Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,1,0" Padding="12,16">
+      <Border x:Name="SidebarBorder" Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,1,0" Padding="8,16">
         <DockPanel>
-          <StackPanel x:Name="SidebarHeader" DockPanel.Dock="Top" Margin="12,0,0,20">
-            <TextBlock Text="MobiFlux" FontSize="23" FontWeight="SemiBold" />
-            <TextBlock Text="Cellular proxy manager" Style="{StaticResource Muted}" Margin="0,4,0,0" />
-          </StackPanel>
+          <Grid x:Name="SidebarHeader" DockPanel.Dock="Top" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel x:Name="SidebarTitleGroup" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+              <Viewbox Width="32" Height="32" Margin="0,0,10,0">
+                <Canvas Width="64" Height="64">
+                  <Path Data="M 14,50 L 14,23 C 14,12 23,12 32,28"
+                        Stroke="#38BDF8" StrokeThickness="5.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                  <Path Data="M 32,28 C 41,12 50,12 50,23 L 50,50"
+                        Stroke="#818CF8" StrokeThickness="5.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                  <Ellipse Canvas.Left="24" Canvas.Top="20" Width="16" Height="16" Fill="#5038BDF8" />
+                  <Ellipse Canvas.Left="28" Canvas.Top="24" Width="8" Height="8" Fill="#FFFFFF" />
+                  <Ellipse Canvas.Left="10.5" Canvas.Top="46.5" Width="7" Height="7" Fill="#38BDF8" />
+                  <Ellipse Canvas.Left="46.5" Canvas.Top="46.5" Width="7" Height="7" Fill="#818CF8" />
+                </Canvas>
+              </Viewbox>
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="MobiFlux" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" />
+                <TextBlock Text="Cellular proxy" Style="{StaticResource Muted}" Margin="0,1,0,0" FontSize="11" />
+              </StackPanel>
+            </StackPanel>
+            <Button x:Name="ToggleSidebarButton" Grid.Column="1" Click="ToggleSidebar" Style="{StaticResource Button.Icon}" AutomationProperties.Name="Thu gọn hoặc mở rộng thanh điều hướng" ToolTip="Thu gọn / mở rộng thanh điều hướng" VerticalAlignment="Center" HorizontalAlignment="Center">
+              <ui:SymbolIcon Symbol="Navigation24" FontSize="18" />
+            </Button>
+          </Grid>
           <StackPanel x:Name="SidebarFooter" DockPanel.Dock="Bottom">
             <Button Content="Cài đặt" Command="{Binding NavigateCommand}" CommandParameter="Settings" HorizontalAlignment="Stretch" Margin="0,8,0,12" />
             <TextBlock Text="{Binding ServiceStatus}" Style="{StaticResource Muted}" Margin="8,0" />
           </StackPanel>
           <ListBox x:Name="NavigationList" IsEnabled="{Binding CanUsePage}" ItemsSource="{Binding Navigation}" SelectedValuePath="Key" SelectedValue="{Binding CurrentTab, Mode=TwoWay}" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="AutomationProperties.Name" Value="{Binding Title}" /></Style></ListBox.ItemContainerStyle><ListBox.ItemTemplate>
+            <ListBox.ItemContainerStyle>
+              <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                <Setter Property="AutomationProperties.Name" Value="{Binding Title}" />
+                <Setter Property="Height" Value="40" />
+                <Setter Property="Padding" Value="4,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+              </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
               <DataTemplate>
-                <StackPanel Orientation="Horizontal" ToolTip="{Binding Title}">
-                  <ui:SymbolIcon Symbol="{Binding Icon}" FontSize="18" Margin="0,0,12,0" />
-                  <TextBlock Text="{Binding Title}" FontSize="15"><TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
-                </StackPanel>
+                <Grid ToolTip="{Binding Title}" Height="40">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <ui:SymbolIcon Symbol="{Binding Icon}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="14" VerticalAlignment="Center" Margin="6,0,0,0" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
@@ -64,23 +109,23 @@
           <RowDefinition Height="*" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="12,8,12,4" Background="{DynamicResource Brush.Surface}">
-          <DockPanel LastChildFill="True"><Button DockPanel.Dock="Left" Click="ToggleSidebar" AutomationProperties.Name="Thu gọn hoặc mở rộng thanh điều hướng" ToolTip="Thu gọn / mở rộng thanh điều hướng" Width="36" MinWidth="36" Padding="0"><ui:SymbolIcon Symbol="List24" FontSize="18" /></Button>
-            <WrapPanel DockPanel.Dock="Right">
-              <Button Command="{Binding ToggleThemeCommand}" AutomationProperties.Name="Chuyển giao diện sáng hoặc tối" ToolTip="Chuyển giao diện sáng / tối" Width="44" MinWidth="44" Padding="0">
-                <ui:SymbolIcon Symbol="WeatherMoon24" FontSize="19" />
+        <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="16,8" Background="{DynamicResource Brush.Surface}">
+          <DockPanel LastChildFill="True">
+            <WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+              <Button Command="{Binding ToggleThemeCommand}" AutomationProperties.Name="Chuyển giao diện sáng hoặc tối" ToolTip="Chuyển giao diện sáng / tối" Style="{StaticResource Button.Icon}" Margin="0,0,6,0">
+                <ui:SymbolIcon Symbol="WeatherMoon24" FontSize="18" />
               </Button>
-              <Button Content="Làm mới" Command="{Binding RefreshCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" />
+              <Button Content="Làm mới" Command="{Binding RefreshCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}" Margin="0" />
             </WrapPanel>
-            <TextBlock Text="{Binding CurrentTitle}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,8" />
+            <TextBlock Text="{Binding CurrentTitle}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0" />
           </DockPanel>
         </Border>
         <Grid Grid.Row="1" x:Name="PageHost">
-          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Grid Margin="12" IsEnabled="{Binding CanUsePage}">
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Dashboard}">
-                <DockPanel Margin="0,0,0,20">
-                  <WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+          <Grid Margin="12" IsEnabled="{Binding CanUsePage}">
+            <ScrollViewer Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Dashboard}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="0,0,8,0">
+                <DockPanel Margin="0,0,0,16">
+                  <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button Command="{Binding DiscoverCommand}">
                       <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="ArrowSync24" Margin="0,0,8,0" FontSize="17" />
@@ -94,9 +139,6 @@
                       </StackPanel>
                     </Button>
                   </WrapPanel>
-                  <StackPanel>
-                    <TextBlock Text="Tổng quan" Style="{StaticResource Title}" />
-                  </StackPanel>
                 </DockPanel>
                 <local:AdaptivePanel MinimumItemWidth="210" Margin="0,0,0,4">
                   <Border Style="{StaticResource Card}">
@@ -136,6 +178,62 @@
                     </StackPanel>
                   </Border>
                 </local:AdaptivePanel>
+                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                  <StackPanel>
+                    <DockPanel Margin="0,0,0,14">
+                      <WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+                        <TextBlock Text="Chu kỳ:" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <ComboBox ItemsSource="{Binding TimeFilterOptions}" SelectedItem="{Binding SelectedTimeFilter}" Width="130" VerticalAlignment="Center" />
+                      </WrapPanel>
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Thống kê theo chu kỳ" Style="{StaticResource Section}" Margin="0,0,0,2" />
+                        <TextBlock Text="Tổng hợp lưu lượng, phiên kết nối và số lần đổi IP cellular" Style="{StaticResource Muted}" />
+                      </StackPanel>
+                    </DockPanel>
+                    <local:AdaptivePanel MinimumItemWidth="180">
+                      <Border Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <StackPanel>
+                          <TextBlock Text="Tổng lưu lượng" Style="{StaticResource Muted}" FontSize="12" />
+                          <TextBlock Text="{Binding PeriodTrafficTotal}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Accent}" Margin="0,6,0,2" />
+                          <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="▲ " Foreground="{DynamicResource Brush.Accent}" FontSize="11" />
+                            <TextBlock Text="{Binding PeriodBytesUp}" Style="{StaticResource Muted}" FontSize="11" Margin="0,0,8,0" />
+                            <TextBlock Text="▼ " Foreground="{DynamicResource Brush.Success}" FontSize="11" />
+                            <TextBlock Text="{Binding PeriodBytesDown}" Style="{StaticResource Muted}" FontSize="11" />
+                          </StackPanel>
+                        </StackPanel>
+                      </Border>
+                      <Border Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <StackPanel>
+                          <TextBlock Text="Tổng phiên kết nối" Style="{StaticResource Muted}" FontSize="12" />
+                          <TextBlock Text="{Binding PeriodSessionCount}" FontSize="22" FontWeight="Bold" Margin="0,6,0,2" />
+                          <TextBlock Text="Phiên ghi nhận qua proxy" Style="{StaticResource Muted}" FontSize="11" />
+                        </StackPanel>
+                      </Border>
+                      <Border Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <StackPanel>
+                          <TextBlock Text="Phiên lỗi / Thất bại" Style="{StaticResource Muted}" FontSize="12" />
+                          <TextBlock Text="{Binding PeriodFailedSessions}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Danger}" Margin="0,6,0,2" />
+                          <TextBlock Text="Lỗi hoặc gián đoạn mạng" Style="{StaticResource Muted}" FontSize="11" />
+                        </StackPanel>
+                      </Border>
+                      <Border Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <StackPanel>
+                          <TextBlock Text="Tỷ lệ thành công" Style="{StaticResource Muted}" FontSize="12" />
+                          <TextBlock Text="{Binding PeriodSuccessRate}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Success}" Margin="0,6,0,2" />
+                          <TextBlock Text="Hiệu suất định tuyến" Style="{StaticResource Muted}" FontSize="11" />
+                        </StackPanel>
+                      </Border>
+                      <Border Background="{DynamicResource Brush.Sidebar}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14,12">
+                        <StackPanel>
+                          <TextBlock Text="Đổi IP Cellular" Style="{StaticResource Muted}" FontSize="12" />
+                          <TextBlock Text="{Binding PeriodRotationsCount}" FontSize="22" FontWeight="Bold" Foreground="#8B5CF6" Margin="0,6,0,2" />
+                          <TextBlock Text="Lần xoay IP di động" Style="{StaticResource Muted}" FontSize="11" />
+                        </StackPanel>
+                      </Border>
+                    </local:AdaptivePanel>
+                  </StackPanel>
+                </Border>
                 <Border Style="{StaticResource Card}">
                   <StackPanel>
                     <DockPanel>
@@ -200,71 +298,91 @@
                   </Border>
                 </local:AdaptivePanel>
               </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Proxies}">
-                <TextBlock Text="Proxy" Style="{StaticResource Title}" />
-                <WrapPanel>
-                  <Button Content="Tạo proxy" Style="{StaticResource Button.Primary}" Command="{Binding OpenProxyCommand}" />
-                  <Button Content="Bật / tắt" Command="{Binding ToggleProxyCommand}" />
-                  <Button Content="Chỉnh sửa" Command="{Binding EditProxyCommand}" />
-                  <Button Content="Xóa proxy" Style="{StaticResource Button.Danger}" Command="{Binding DeleteProxyCommand}" />
-                </WrapPanel>
-                <DataGrid ItemsSource="{Binding Endpoints}" SelectedItem="{Binding SelectedEndpoint}" Margin="0,8,0,16">
-                  <DataGrid.Columns>
-                    <DataGridTextColumn Header="Tên proxy" Binding="{Binding Name}" Width="180" />
-                    <DataGridTextColumn Header="Bind" Binding="{Binding BindAddress}" Width="140" />
-                    <DataGridTextColumn Header="Cổng" Binding="{Binding Port}" Width="80" />
-                    <DataGridTextColumn Header="Giao thức" Binding="{Binding Protocol}" Width="130" />
-                    <DataGridCheckBoxColumn Header="Đang chạy" Binding="{Binding Running}" Width="100" />
-                    <DataGridTextColumn Header="Tài khoản" Binding="{Binding Username}" Width="130" />
-                    <DataGridTextColumn Header="Giới hạn" Binding="{Binding MaxConnections}" Width="90" />
-                    <DataGridTextColumn Header="Client được phép" Binding="{Binding AllowedClients}" Width="240" />
-                  </DataGrid.Columns>
-                </DataGrid>
-                <Border Style="{StaticResource Card}">
-                  <StackPanel>
-                    <TextBlock Text="Địa chỉ proxy" Style="{StaticResource Section}" />
-                    <TextBox Text="{Binding ConnectionString, Mode=OneWay}" IsReadOnly="True" />
-                    <WrapPanel>
-                      <Button Content="Sao chép" Command="{Binding CopyConnectionCommand}" />
-                      <Button Content="Kiểm tra HTTPS" Command="{Binding TestProxyCommand}" />
-                    </WrapPanel>
-                    <TextBlock Text="Mật khẩu proxy" />
-                    <PasswordBox local:PasswordBinding.Enabled="True" local:PasswordBinding.Value="{Binding ProxyPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Text="{Binding ProbeResult}" Margin="0,8,0,0" />
-                  </StackPanel>
-                </Border>
-              </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Devices}">
-                <TextBlock Text="Điện thoại" Style="{StaticResource Title}" />
-                <WrapPanel>
-                  <Button Content="Quét ADB" Style="{StaticResource Button.Primary}" Command="{Binding DiscoverCommand}" />
-                  <Button Content="Thêm điện thoại" Command="{Binding OpenDeviceCommand}" />
-                  <Button Content="Bật / tắt" Command="{Binding ToggleDeviceCommand}" />
-                </WrapPanel>
-                <DataGrid ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" Margin="0,8,0,16">
-                  <DataGrid.Columns>
-                    <DataGridTextColumn Header="Tên điện thoại" Binding="{Binding Name}" Width="200" />
-                    <DataGridTextColumn Header="ADB serial" Binding="{Binding AdbSerial}" Width="200" />
-                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding ActualState}" Width="180" />
-                    <DataGridCheckBoxColumn Header="Cho phép dùng" Binding="{Binding Enabled}" Width="110" />
-                    <DataGridTextColumn Header="Nhà mạng" Binding="{Binding Carrier}" Width="140" />
-                    <DataGridTextColumn Header="Mạng" Binding="{Binding Network}" Width="100" />
-                    <DataGridTextColumn Header="Pin" Binding="{Binding Battery}" Width="80" />
-                    <DataGridTextColumn Header="Lần kiểm tra" Binding="{Binding LastSeenAt, StringFormat=HH:mm:ss}" Width="130" />
-                  </DataGrid.Columns>
-                </DataGrid>
-              </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Routing}">
-                <TextBlock Text="Pool và định tuyến" Style="{StaticResource Title}" />
-                <WrapPanel>
+            </ScrollViewer>
+            <Grid Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Proxies}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MinHeight="220" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+              <WrapPanel Grid.Row="0" Margin="0,0,0,12">
+                <Button Content="Tạo proxy" Style="{StaticResource Button.Primary}" Command="{Binding OpenProxyCommand}" />
+                <Button Content="Bật / tắt" Command="{Binding ToggleProxyCommand}" />
+                <Button Content="Chỉnh sửa" Command="{Binding EditProxyCommand}" />
+                <Button Content="Xóa proxy" Style="{StaticResource Button.Danger}" Command="{Binding DeleteProxyCommand}" />
+              </WrapPanel>
+              <DataGrid Grid.Row="1" ItemsSource="{Binding Endpoints}" SelectedItem="{Binding SelectedEndpoint}"
+                        VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                        AutoGenerateColumns="False" CanUserResizeColumns="True">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Tên proxy" Binding="{Binding Name}" Width="2*" MinWidth="140" />
+                  <DataGridTextColumn Header="Bind" Binding="{Binding BindAddress}" Width="130" />
+                  <DataGridTextColumn Header="Cổng" Binding="{Binding Port}" Width="80" />
+                  <DataGridTextColumn Header="Giao thức" Binding="{Binding Protocol}" Width="110" />
+                  <DataGridCheckBoxColumn Header="Đang chạy" Binding="{Binding Running}" Width="90" />
+                  <DataGridTextColumn Header="Tài khoản" Binding="{Binding Username}" Width="120" />
+                  <DataGridTextColumn Header="Giới hạn" Binding="{Binding MaxConnections}" Width="90" />
+                  <DataGridTextColumn Header="Client được phép" Binding="{Binding AllowedClients}" Width="3*" MinWidth="180">
+                    <DataGridTextColumn.ElementStyle>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        <Setter Property="ToolTip" Value="{Binding AllowedClients}" />
+                      </Style>
+                    </DataGridTextColumn.ElementStyle>
+                  </DataGridTextColumn>
+                </DataGrid.Columns>
+              </DataGrid>
+              <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                  <TextBlock Text="Địa chỉ proxy" Style="{StaticResource Section}" />
+                  <TextBox Text="{Binding ConnectionString, Mode=OneWay}" IsReadOnly="True" />
+                  <WrapPanel Margin="0,8,0,8">
+                    <Button Content="Sao chép" Command="{Binding CopyConnectionCommand}" />
+                    <Button Content="Kiểm tra HTTPS" Command="{Binding TestProxyCommand}" />
+                  </WrapPanel>
+                  <TextBlock Text="Mật khẩu proxy" />
+                  <PasswordBox local:PasswordBinding.Enabled="True" local:PasswordBinding.Value="{Binding ProxyPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                  <TextBlock Text="{Binding ProbeResult}" Margin="0,8,0,0" />
+                </StackPanel>
+              </Border>
+            </Grid>
+            <Grid Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Devices}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <WrapPanel Grid.Row="0" Margin="0,0,0,12">
+                <Button Content="Quét ADB" Style="{StaticResource Button.Primary}" Command="{Binding DiscoverCommand}" />
+                <Button Content="Thêm điện thoại" Command="{Binding OpenDeviceCommand}" />
+                <Button Content="Bật / tắt" Command="{Binding ToggleDeviceCommand}" />
+              </WrapPanel>
+              <DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}"
+                        VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                        AutoGenerateColumns="False" CanUserResizeColumns="True">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Tên điện thoại" Binding="{Binding Name}" Width="2*" MinWidth="160" />
+                  <DataGridTextColumn Header="ADB serial" Binding="{Binding AdbSerial}" Width="2*" MinWidth="150" />
+                  <DataGridTextColumn Header="Trạng thái" Binding="{Binding ActualState}" Width="1.5*" MinWidth="130" />
+                  <DataGridCheckBoxColumn Header="Cho phép dùng" Binding="{Binding Enabled}" Width="120" />
+                  <DataGridTextColumn Header="Nhà mạng" Binding="{Binding Carrier}" Width="1.5*" MinWidth="120" />
+                  <DataGridTextColumn Header="Mạng" Binding="{Binding Network}" Width="100" />
+                  <DataGridTextColumn Header="Pin" Binding="{Binding Battery}" Width="80" />
+                  <DataGridTextColumn Header="Lần kiểm tra" Binding="{Binding LastSeenAt, StringFormat=HH:mm:ss}" Width="120" />
+                </DataGrid.Columns>
+              </DataGrid>
+            </Grid>
+            <ScrollViewer Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Routing}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <StackPanel Margin="0,0,8,0">
+                <WrapPanel Margin="0,0,0,12">
                   <Button Content="Tạo pool" Style="{StaticResource Button.Primary}" Command="{Binding OpenPoolCommand}" />
                   <Button Content="Lưu thay đổi" Command="{Binding SavePoolCommand}" /><Button Content="Xóa pool" Command="{Binding DeletePoolCommand}" Style="{StaticResource Button.Danger}" />
                 </WrapPanel>
                 <ComboBox ItemsSource="{Binding Pools}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedPool}" />
                 <Border Style="{StaticResource Card}">
                   <StackPanel>
-                    <TextBlock Text="Chiến lược" />
-                    <ComboBox ItemsSource="{Binding Strategies}" SelectedItem="{Binding RoutingStrategy}" />
+                    <TextBlock Text="Cách chia kết nối vào điện thoại" />
+                    <ComboBox ItemsSource="{Binding AvailableStrategies}" SelectedValuePath="Key" SelectedValue="{Binding RoutingStrategy, Mode=TwoWay}" DisplayMemberPath="DisplayName" />
+                    <TextBlock Text="{Binding SelectedStrategyDescription}" Foreground="{DynamicResource Brush.Muted}" TextWrapping="Wrap" Margin="0,4,0,8" FontSize="12" />
                     <TextBlock Text="Sticky TTL (giây)" />
                     <TextBox Text="{Binding StickyTtl, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
                     <CheckBox Content="Bật pool" IsChecked="{Binding PoolEnabled}" />
@@ -273,80 +391,123 @@
                   </StackPanel>
                 </Border>
               </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Rotation}">
-                <TextBlock Text="Đổi IP" Style="{StaticResource Title}" />
-                <ComboBox ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" DisplayMemberPath="Name" />
-                <WrapPanel>
-                  <Button Content="Đổi IP" Style="{StaticResource Button.Primary}" Command="{Binding RotateCommand}" />
+            </ScrollViewer>
+            <Grid Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Rotation}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                <TextBlock Text="Chọn thiết bị để đổi IP" Style="{StaticResource Section}" Margin="0,0,0,8" />
+                <WrapPanel VerticalAlignment="Center">
+                  <ComboBox Width="280" Margin="0,0,12,0" VerticalAlignment="Center" ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" DisplayMemberPath="Name" />
+                  <Button Content="Đổi IP ngay" Style="{StaticResource Button.Primary}" Command="{Binding RotateCommand}" Margin="0" VerticalAlignment="Center" />
                 </WrapPanel>
-                <DataGrid ItemsSource="{Binding Rotations}" Margin="0,8,0,16">
-                  <DataGrid.Columns>
-                    <DataGridTextColumn Header="Điện thoại" Binding="{Binding DeviceSerial}" Width="180" />
-                    <DataGridTextColumn Header="IP trước" Binding="{Binding PreviousIp}" Width="160" />
-                    <DataGridTextColumn Header="IP sau" Binding="{Binding CurrentIp}" Width="160" />
-                    <DataGridTextColumn Header="Thời điểm" Binding="{Binding ChangedAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="180" />
-                    <DataGridTextColumn Header="Thời gian" Binding="{Binding Duration}" Width="100" />
-                    <DataGridTextColumn Header="Kết quả" Binding="{Binding Status}" Width="520" />
-                  </DataGrid.Columns>
-                </DataGrid>
               </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Sessions}">
-                <TextBlock Text="Lịch sử kết nối" Style="{StaticResource Title}" />
-                  <WrapPanel>
-                    <StackPanel Margin="0,0,8,8"><TextBlock Text="Proxy" Style="{StaticResource Muted}" /><ComboBox Width="220" ItemsSource="{Binding Endpoints}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SessionEndpointId}" /></StackPanel>
-                    <StackPanel Margin="0,0,8,8"><TextBlock Text="Điện thoại" Style="{StaticResource Muted}" /><ComboBox Width="220" ItemsSource="{Binding Devices}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SessionDeviceId}" /></StackPanel>
-                    <Button Content="Áp dụng bộ lọc" Command="{Binding ApplySessionFiltersCommand}" VerticalAlignment="Bottom" />
-                    <Button Content="Xóa bộ lọc" Command="{Binding ClearSessionFiltersCommand}" VerticalAlignment="Bottom" />
-                  </WrapPanel>
+              <DataGrid Grid.Row="1" ItemsSource="{Binding Rotations}" VerticalAlignment="Stretch"
+                        HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                        AutoGenerateColumns="False" CanUserResizeColumns="True">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Điện thoại" Binding="{Binding DeviceSerial}" Width="1.5*" MinWidth="140" />
+                  <DataGridTextColumn Header="IP trước" Binding="{Binding PreviousIp}" Width="130" />
+                  <DataGridTextColumn Header="IP sau" Binding="{Binding CurrentIp}" Width="130" />
+                  <DataGridTextColumn Header="Thời điểm" Binding="{Binding ChangedAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="160" />
+                  <DataGridTextColumn Header="Thời gian" Binding="{Binding Duration}" Width="90" />
+                  <DataGridTextColumn Header="Kết quả" Binding="{Binding Status}" Width="4*" MinWidth="220">
+                    <DataGridTextColumn.ElementStyle>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        <Setter Property="ToolTip" Value="{Binding Status}" />
+                      </Style>
+                    </DataGridTextColumn.ElementStyle>
+                  </DataGridTextColumn>
+                </DataGrid.Columns>
+              </DataGrid>
+            </Grid>
+            <Grid Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Sessions}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                <WrapPanel Margin="0,0,0,8" VerticalAlignment="Center">
+                  <StackPanel Orientation="Horizontal" Margin="0,0,12,8" VerticalAlignment="Center">
+                    <TextBlock Text="Proxy" VerticalAlignment="Center" Margin="0,0,8,0" Style="{StaticResource Muted}" />
+                    <ComboBox Width="200" Margin="0" ItemsSource="{Binding Endpoints}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SessionEndpointId}" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal" Margin="0,0,12,8" VerticalAlignment="Center">
+                    <TextBlock Text="Điện thoại" VerticalAlignment="Center" Margin="0,0,8,0" Style="{StaticResource Muted}" />
+                    <ComboBox Width="200" Margin="0" ItemsSource="{Binding Devices}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding SessionDeviceId}" />
+                  </StackPanel>
+                  <Button Content="Áp dụng bộ lọc" Command="{Binding ApplySessionFiltersCommand}" Margin="0,0,8,8" VerticalAlignment="Center" />
+                  <Button Content="Xóa bộ lọc" Command="{Binding ClearSessionFiltersCommand}" Margin="0,0,8,8" VerticalAlignment="Center" />
+                </WrapPanel>
                 <WrapPanel>
                   <Button Content="Trang trước" Command="{Binding PreviousSessionsCommand}" />
                   <Button Content="Trang sau" Command="{Binding NextSessionsCommand}" />
-                  <TextBlock Text="{Binding SessionPageLabel}" VerticalAlignment="Center" Margin="8,0,0,8" />
+                  <TextBlock Text="{Binding SessionPageLabel}" VerticalAlignment="Center" Margin="8,0,0,0" />
                 </WrapPanel>
-                <DataGrid ItemsSource="{Binding Sessions}">
-                  <DataGrid.Columns>
-                    <DataGridTextColumn Header="Đích" Binding="{Binding DestinationHost}" Width="240" />
-                    <DataGridTextColumn Header="Cổng" Binding="{Binding DestinationPort}" Width="80" />
-                    <DataGridTextColumn Header="Bắt đầu" Binding="{Binding StartedAt, StringFormat=HH:mm:ss}" Width="130" />
-                    <DataGridTextColumn Header="Kết thúc" Binding="{Binding EndedAt, StringFormat=HH:mm:ss}" Width="130" />
-                    <DataGridTextColumn Header="Tải lên (B)" Binding="{Binding BytesUp}" Width="120" />
-                    <DataGridTextColumn Header="Tải xuống (B)" Binding="{Binding BytesDown}" Width="120" />
-                    <DataGridTextColumn Header="Kết quả" Binding="{Binding CloseReason}" Width="180" />
-                  </DataGrid.Columns>
-                </DataGrid>
               </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Networking}">
-                <TextBlock Text="Mạng Windows" Style="{StaticResource Title}" />
-                <Button Content="Tải thông tin mạng" Command="{Binding LoadNetworkingCommand}" HorizontalAlignment="Left" />
-                <DataGrid ItemsSource="{Binding Interfaces}" Margin="0,8,0,16">
-                  <DataGrid.Columns>
-                    <DataGridTextColumn Header="Giao diện" Binding="{Binding Name}" Width="200" />
-                    <DataGridTextColumn Header="Địa chỉ IP" Binding="{Binding IpAddresses}" Width="360" />
-                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="130" />
-                    <DataGridTextColumn Header="Loại" Binding="{Binding Type}" Width="160" />
-                  </DataGrid.Columns>
-                </DataGrid>
-                <Border Style="{StaticResource Card}">
+              <DataGrid Grid.Row="1" ItemsSource="{Binding Sessions}" VerticalAlignment="Stretch"
+                        HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                        AutoGenerateColumns="False" CanUserResizeColumns="True">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Đích" Binding="{Binding DestinationHost}" Width="3*" MinWidth="180" />
+                  <DataGridTextColumn Header="Cổng" Binding="{Binding DestinationPort}" Width="80" />
+                  <DataGridTextColumn Header="Bắt đầu" Binding="{Binding StartedAt, StringFormat=HH:mm:ss}" Width="110" />
+                  <DataGridTextColumn Header="Kết thúc" Binding="{Binding EndedAt, StringFormat=HH:mm:ss}" Width="110" />
+                  <DataGridTextColumn Header="Tải lên (B)" Binding="{Binding BytesUp}" Width="120" />
+                  <DataGridTextColumn Header="Tải xuống (B)" Binding="{Binding BytesDown}" Width="120" />
+                  <DataGridTextColumn Header="Kết quả" Binding="{Binding CloseReason}" Width="2*" MinWidth="140" />
+                </DataGrid.Columns>
+              </DataGrid>
+            </Grid>
+            <ScrollViewer Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Networking}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <StackPanel Margin="0,0,8,0">
+                <Button Content="Tải thông tin mạng" Command="{Binding LoadNetworkingCommand}" HorizontalAlignment="Left" Margin="0,0,0,12" />
+                <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                  <StackPanel>
+                    <TextBlock Text="Giao diện mạng trên Windows" Style="{StaticResource Section}" Margin="0,0,0,8" />
+                    <DataGrid ItemsSource="{Binding Interfaces}" VerticalAlignment="Stretch" MaxHeight="240"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                              AutoGenerateColumns="False" CanUserResizeColumns="True">
+                      <DataGrid.Columns>
+                        <DataGridTextColumn Header="Giao diện" Binding="{Binding Name}" Width="2*" MinWidth="160" />
+                        <DataGridTextColumn Header="Địa chỉ IP" Binding="{Binding IpAddresses}" Width="3*" MinWidth="220" />
+                        <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="120" />
+                        <DataGridTextColumn Header="Loại" Binding="{Binding Type}" Width="130" />
+                      </DataGrid.Columns>
+                    </DataGrid>
+                  </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,0,14">
                   <StackPanel>
                     <TextBlock Text="Ping từ Windows" Style="{StaticResource Section}" />
                     <TextBox Text="{Binding PingHost, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Content="Kiểm tra ping" Command="{Binding PingCommand}" HorizontalAlignment="Left" />
-                    <TextBlock Text="{Binding PingResult}" />
+                    <Button Content="Kiểm tra ping" Command="{Binding PingCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                    <TextBlock Text="{Binding PingResult}" Margin="0,6,0,0" />
                   </StackPanel>
                 </Border>
-                <TextBlock Text="Kết nối TCP trên Windows" Style="{StaticResource Section}" />
-                <DataGrid ItemsSource="{Binding Connections}">
-                  <DataGrid.Columns>
-                    <DataGridTextColumn Header="IP nguồn" Binding="{Binding LocalAddress}" Width="180" />
-                    <DataGridTextColumn Header="Cổng nguồn" Binding="{Binding LocalPort}" Width="100" />
-                    <DataGridTextColumn Header="IP đích" Binding="{Binding RemoteAddress}" Width="220" />
-                    <DataGridTextColumn Header="Cổng đích" Binding="{Binding RemotePort}" Width="110" />
-                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding State}" Width="160" />
-                  </DataGrid.Columns>
-                </DataGrid>
+                <Border Style="{StaticResource Card}">
+                  <StackPanel>
+                    <TextBlock Text="Kết nối TCP trên Windows" Style="{StaticResource Section}" Margin="0,0,0,8" />
+                    <DataGrid ItemsSource="{Binding Connections}" VerticalAlignment="Stretch" MaxHeight="320"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                              AutoGenerateColumns="False" CanUserResizeColumns="True">
+                      <DataGrid.Columns>
+                        <DataGridTextColumn Header="IP nguồn" Binding="{Binding LocalAddress}" Width="2*" MinWidth="140" />
+                        <DataGridTextColumn Header="Cổng nguồn" Binding="{Binding LocalPort}" Width="100" />
+                        <DataGridTextColumn Header="IP đích" Binding="{Binding RemoteAddress}" Width="2*" MinWidth="160" />
+                        <DataGridTextColumn Header="Cổng đích" Binding="{Binding RemotePort}" Width="110" />
+                        <DataGridTextColumn Header="Trạng thái" Binding="{Binding State}" Width="140" />
+                      </DataGrid.Columns>
+                    </DataGrid>
+                  </StackPanel>
+                </Border>
               </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Health}">
-                <TextBlock Text="Chẩn đoán hệ thống" Style="{StaticResource Title}" />
+            </ScrollViewer>
+            <ScrollViewer Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Health}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <StackPanel Margin="0,0,8,0">
                 <Border Style="{StaticResource Card}">
                   <StackPanel>
                     <TextBlock Text="{Binding ServiceStatus}" Style="{StaticResource Section}" />
@@ -354,7 +515,7 @@
                     <TextBlock Text="{Binding LastSync, StringFormat='Lần đồng bộ: {0}'}" Margin="0,8" />
                     <TextBlock Text="{Binding ActiveDevices, StringFormat='Điện thoại ProxyReady: {0}'}" />
                     <TextBlock Text="{Binding ActiveProxies, StringFormat='Listener đang chạy: {0}'}" Margin="0,8" />
-                    <WrapPanel>
+                    <WrapPanel Margin="0,12,0,0">
                       <Button Content="Chạy dịch vụ" Command="{Binding StartServiceCommand}" />
                       <Button Content="Làm mới" Command="{Binding RefreshCommand}" />
                       <Button Content="Quét ADB" Command="{Binding DiscoverCommand}" />
@@ -363,27 +524,40 @@
                   </StackPanel>
                 </Border>
               </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Logs}">
-                <TextBlock Text="Nhật ký" Style="{StaticResource Title}" />
-                <WrapPanel>
-                  <Button Content="Xuất JSON" Command="{Binding ExportLogsCommand}" />
-                  <Button Content="Xóa nhật ký" Command="{Binding ClearLogsCommand}" />
-                </WrapPanel>
-                <DataGrid ItemsSource="{Binding Logs}" MaxHeight="600">
-                  <DataGrid.Columns>
-                    <DataGridTextColumn Header="Thời gian" Binding="{Binding Time}" Width="110" />
-                    <DataGridTextColumn Header="Mức độ" Binding="{Binding Level}" Width="100" />
-                    <DataGridTextColumn Header="Nội dung" Binding="{Binding Message}" Width="1000" />
-                  </DataGrid.Columns>
-                </DataGrid>
-              </StackPanel>
-              <StackPanel Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Settings}">
-                <TextBlock Text="Cài đặt" Style="{StaticResource Title}" />
+            </ScrollViewer>
+            <Grid Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Logs}">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <WrapPanel Grid.Row="0" Margin="0,0,0,12">
+                <Button Content="Xuất JSON" Command="{Binding ExportLogsCommand}" />
+                <Button Content="Xóa nhật ký" Command="{Binding ClearLogsCommand}" />
+              </WrapPanel>
+              <DataGrid Grid.Row="1" ItemsSource="{Binding Logs}" VerticalAlignment="Stretch"
+                        HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                        AutoGenerateColumns="False" CanUserResizeColumns="True">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Thời gian" Binding="{Binding Time}" Width="110" />
+                  <DataGridTextColumn Header="Mức độ" Binding="{Binding Level}" Width="90" />
+                  <DataGridTextColumn Header="Nội dung" Binding="{Binding Message}" Width="*" MinWidth="350">
+                    <DataGridTextColumn.ElementStyle>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                        <Setter Property="ToolTip" Value="{Binding Message}" />
+                      </Style>
+                    </DataGridTextColumn.ElementStyle>
+                  </DataGridTextColumn>
+                </DataGrid.Columns>
+              </DataGrid>
+            </Grid>
+            <ScrollViewer Visibility="{Binding CurrentTab, Converter={StaticResource Route}, ConverterParameter=Settings}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <StackPanel Margin="0,0,8,0">
                 <Border Style="{StaticResource Card}">
                   <StackPanel>
                     <TextBlock Text="Tệp dịch vụ" />
                     <TextBox Text="{Binding ServiceExecutable, UpdateSourceTrigger=PropertyChanged}" />
-                    <WrapPanel>
+                    <WrapPanel Margin="0,0,0,10">
                       <Button Content="Chọn tệp" Command="{Binding BrowseServiceCommand}" />
                       <Button Content="Chạy dịch vụ" Command="{Binding StartServiceCommand}" />
                     </WrapPanel>
@@ -391,13 +565,13 @@
                     <TextBox Text="{Binding ApiAddress, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBlock Text="IP chia sẻ" />
                     <TextBox Text="{Binding AdvertisedAddress, UpdateSourceTrigger=PropertyChanged}" />
-                    <CheckBox Content="Đồng bộ mỗi 10 giây" IsChecked="{Binding AutoRefresh}" />
+                    <CheckBox Content="Đồng bộ mỗi 10 giây" IsChecked="{Binding AutoRefresh}" Margin="0,4,0,12" />
                     <Button Content="Lưu cài đặt" Command="{Binding SaveSettingsCommand}" Style="{StaticResource Button.Primary}" HorizontalAlignment="Left" />
                   </StackPanel>
                 </Border>
               </StackPanel>
-            </Grid>
-          </ScrollViewer>
+            </ScrollViewer>
+          </Grid>
           <Border Background="#70000000" Visibility="{Binding ProxyDialogOpen, Converter={StaticResource Visible}}">
             <Border Style="{StaticResource Card}" MaxWidth="620" Margin="24" VerticalAlignment="Center">
               <Grid>
@@ -406,36 +580,31 @@
                   <RowDefinition Height="*" />
                   <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <TextBlock Text="{Binding DialogTitle}" Style="{StaticResource Section}" Grid.Row="0" />
+                <TextBlock Text="{Binding DialogTitle}" Style="{StaticResource Section}" Grid.Row="0" Margin="0,0,0,12" />
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="{Binding ActualHeight, ElementName=PageHost, Converter={StaticResource DialogHeight}}" Grid.Row="1">
                   <StackPanel IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}">
                     <TextBlock Text="Tên proxy" />
                     <TextBox Text="{Binding NewProxyName, UpdateSourceTrigger=PropertyChanged}" />
-                    <StackPanel Visibility="{Binding IsCreatingEndpoint, Converter={StaticResource Visible}}">
-                      <TextBlock Text="Địa chỉ IP" />
-                      <TextBox Text="{Binding NewBindAddress, UpdateSourceTrigger=PropertyChanged}" />
-                      <TextBlock Text="Cổng" />
-                      <TextBox Text="{Binding NewProxyPort, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
-                      <TextBlock Text="Giao thức" />
-                      <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding NewProxyProtocol}" />
-                      <CheckBox Content="Dùng pool" IsChecked="{Binding UsePool}" />
-                      <TextBlock Text="Điện thoại nguồn" />
-                      <ComboBox ItemsSource="{Binding Devices}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding TargetDeviceId}" IsEnabled="{Binding UsePool, Converter={StaticResource Not}}" />
-                      <TextBlock Text="Pool nguồn" />
-                      <ComboBox ItemsSource="{Binding Pools}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding TargetPoolId}" IsEnabled="{Binding UsePool}" />
-                      <TextBlock Text="Tên đăng nhập" />
-                      <TextBox Text="{Binding ProxyUsername, UpdateSourceTrigger=PropertyChanged}" />
-                      <TextBlock Text="Mật khẩu" />
-                      <PasswordBox local:PasswordBinding.Enabled="True" local:PasswordBinding.Value="{Binding ProxyPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                      <TextBlock Text="IP được phép" />
-                      <TextBox Text="{Binding AllowedClients, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-                    <StackPanel Visibility="{Binding IsCreatingEndpoint, Converter={StaticResource InverseVisible}}" x:Name="EditFields">
-                      <TextBlock Text="Giới hạn kết nối" />
-                      <TextBox Text="{Binding EndpointLimit, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
-                      <CheckBox Content="Bật proxy" IsChecked="{Binding EndpointEnabled}" />
-                      <TextBlock Text="Đổi bind, giao thức, thiết bị hoặc tài khoản: tạo endpoint mới, kiểm tra rồi xóa endpoint cũ." Style="{StaticResource Muted}" />
-                    </StackPanel>
+                    <TextBlock Text="Địa chỉ IP" />
+                    <TextBox Text="{Binding NewBindAddress, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Cổng" />
+                    <TextBox Text="{Binding NewProxyPort, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                    <TextBlock Text="Giao thức" />
+                    <ComboBox ItemsSource="{Binding Protocols}" SelectedItem="{Binding NewProxyProtocol}" />
+                    <CheckBox Content="Dùng pool" IsChecked="{Binding UsePool}" Margin="0,4,0,10" />
+                    <TextBlock Text="Điện thoại nguồn" />
+                    <ComboBox ItemsSource="{Binding Devices}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding TargetDeviceId}" IsEnabled="{Binding UsePool, Converter={StaticResource Not}}" />
+                    <TextBlock Text="Pool nguồn" />
+                    <ComboBox ItemsSource="{Binding Pools}" DisplayMemberPath="Name" SelectedValuePath="Id" SelectedValue="{Binding TargetPoolId}" IsEnabled="{Binding UsePool}" />
+                    <TextBlock Text="Giới hạn kết nối" />
+                    <TextBox Text="{Binding EndpointLimit, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                    <CheckBox Content="Kích hoạt proxy" IsChecked="{Binding EndpointEnabled}" Visibility="{Binding IsCreatingEndpoint, Converter={StaticResource InverseVisible}}" Margin="0,4,0,10" />
+                    <TextBlock Text="Tên đăng nhập" />
+                    <TextBox Text="{Binding ProxyUsername, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Mật khẩu" />
+                    <PasswordBox local:PasswordBinding.Enabled="True" local:PasswordBinding.Value="{Binding ProxyPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="IP được phép (phân cách bằng dấu phẩy)" />
+                    <TextBox Text="{Binding AllowedClients, UpdateSourceTrigger=PropertyChanged}" />
                   </StackPanel>
                 </ScrollViewer>
                 <WrapPanel Margin="0,16,0,0" Grid.Row="2">
@@ -473,8 +642,9 @@
                   <StackPanel>
                     <TextBlock Text="Tên pool" />
                     <TextBox Text="{Binding NewPoolName, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Text="Chiến lược" />
-                    <ComboBox ItemsSource="{Binding Strategies}" SelectedItem="{Binding RoutingStrategy}" />
+                    <TextBlock Text="Cách chia kết nối vào điện thoại" />
+                    <ComboBox ItemsSource="{Binding AvailableStrategies}" SelectedValuePath="Key" SelectedValue="{Binding RoutingStrategy, Mode=TwoWay}" DisplayMemberPath="DisplayName" />
+                    <TextBlock Text="{Binding SelectedStrategyDescription}" Foreground="{DynamicResource Brush.Muted}" TextWrapping="Wrap" Margin="0,4,0,8" FontSize="12" />
                     <TextBlock Text="Sticky TTL (giây)" />
                     <TextBox Text="{Binding StickyTtl, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
                     <TextBlock Text="Chọn điện thoại · trọng số · ưu tiên" Style="{StaticResource Section}" />

@@ -1,22 +1,22 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Color x:Key="Color.Canvas">#FAFAFA</Color>
+  <Color x:Key="Color.Canvas">#F8FAFC</Color>
   <Color x:Key="Color.Sidebar">#FFFFFF</Color>
   <Color x:Key="Color.Surface">#FFFFFF</Color>
-  <Color x:Key="Color.SurfaceElevated">#F4F4F5</Color>
-  <Color x:Key="Color.SurfaceMuted">#F4F4F5</Color>
-  <Color x:Key="Color.Border">#E4E4E7</Color>
-  <Color x:Key="Color.BorderSubtle">#D4D4D8</Color>
-  <Color x:Key="Color.Text">#09090B</Color>
-  <Color x:Key="Color.TextSecondary">#52525B</Color>
-  <Color x:Key="Color.Muted">#71717A</Color>
-  <Color x:Key="Color.Accent">#3567BD</Color>
-  <Color x:Key="Color.AccentHover">#28549C</Color>
-  <Color x:Key="Color.AccentMuted">#EDF2FA</Color>
-  <Color x:Key="Color.Success">#167C65</Color>
-  <Color x:Key="Color.SuccessMuted">#F0FDF4</Color>
-  <Color x:Key="Color.Warning">#D97706</Color>
+  <Color x:Key="Color.SurfaceElevated">#F1F5F9</Color>
+  <Color x:Key="Color.SurfaceMuted">#F8FAFC</Color>
+  <Color x:Key="Color.Border">#E2E8F0</Color>
+  <Color x:Key="Color.BorderSubtle">#CBD5E1</Color>
+  <Color x:Key="Color.Text">#0F172A</Color>
+  <Color x:Key="Color.TextSecondary">#475569</Color>
+  <Color x:Key="Color.Muted">#64748B</Color>
+  <Color x:Key="Color.Accent">#2563EB</Color>
+  <Color x:Key="Color.AccentHover">#1D4ED8</Color>
+  <Color x:Key="Color.AccentMuted">#EFF6FF</Color>
+  <Color x:Key="Color.Success">#10B981</Color>
+  <Color x:Key="Color.SuccessMuted">#ECFDF5</Color>
+  <Color x:Key="Color.Warning">#F59E0B</Color>
   <Color x:Key="Color.WarningMuted">#FFFBEB</Color>
-  <Color x:Key="Color.Danger">#DC2626</Color>
+  <Color x:Key="Color.Danger">#EF4444</Color>
   <Color x:Key="Color.DangerMuted">#FEF2F2</Color>
 
   <SolidColorBrush x:Key="Brush.Canvas" Color="{StaticResource Color.Canvas}" />
@@ -39,10 +39,10 @@
   <SolidColorBrush x:Key="Brush.Danger" Color="{StaticResource Color.Danger}" />
   <SolidColorBrush x:Key="Brush.DangerMuted" Color="{StaticResource Color.DangerMuted}" />
 
-  <CornerRadius x:Key="Radius.Small">3</CornerRadius>
-  <CornerRadius x:Key="Radius.Control">4</CornerRadius>
-  <CornerRadius x:Key="Radius.Panel">5</CornerRadius>
-  <CornerRadius x:Key="Radius.Modal">6</CornerRadius>
+  <CornerRadius x:Key="Radius.Small">4</CornerRadius>
+  <CornerRadius x:Key="Radius.Control">6</CornerRadius>
+  <CornerRadius x:Key="Radius.Panel">8</CornerRadius>
+  <CornerRadius x:Key="Radius.Modal">10</CornerRadius>
 
   <Thickness x:Key="Space.1">4</Thickness>
   <Thickness x:Key="Space.2">8</Thickness>

@@ -62,7 +62,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string newDeviceName = "";
     [ObservableProperty] private string newDeviceSerial = "";
     [ObservableProperty] private string newPoolName = "";
-    [ObservableProperty] private string routingStrategy = "RoundRobin";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(SelectedStrategyDescription))] private string routingStrategy = "RoundRobin";
     [ObservableProperty] private string stickyTtl = "300";
     [ObservableProperty] private bool poolEnabled = true;
     [ObservableProperty] private string probeResult = "Chưa kiểm tra";
@@ -87,6 +87,35 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     private int _sessionTotal;
     public string[] Protocols { get; } = ["Socks5", "HttpConnect"];
     public string[] Strategies { get; } = ["RoundRobin", "LeastConnections", "WeightedRoundRobin", "Random"];
+    public StrategyOption[] AvailableStrategies { get; } =
+    [
+        new("RoundRobin", "Chia đều lần lượt", "Mỗi kết nối mới sẽ chuyển sang điện thoại tiếp theo lần lượt xoay vòng."),
+        new("LeastConnections", "Ưu tiên máy đang rảnh", "Tự động chọn điện thoại đang có ít kết nối nhất để vào mạng nhanh nhất."),
+        new("WeightedRoundRobin", "Chia theo độ ưu tiên / sức mạnh", "Điện thoại nào cài trọng số lớn hơn sẽ nhận được nhiều kết nối hơn."),
+        new("Random", "Chọn ngẫu nhiên", "Mỗi kết nối sẽ bốc ngẫu nhiên một điện thoại đang online.")
+    ];
+    public string SelectedStrategyDescription =>
+        AvailableStrategies.FirstOrDefault(s => s.Key == RoutingStrategy)?.Description ?? "";
+
+    public TimeFilterOption[] TimeFilterOptions { get; } =
+    [
+        new("Hôm nay", 0),
+        new("3 ngày", 3),
+        new("7 ngày", 7),
+        new("30 ngày", 30),
+        new("60 ngày", 60),
+        new("Toàn bộ", null)
+    ];
+    [ObservableProperty] private TimeFilterOption? selectedTimeFilter;
+    partial void OnSelectedTimeFilterChanged(TimeFilterOption? value) => _ = LoadPeriodTrafficAsync();
+
+    [ObservableProperty] private string periodTrafficTotal = "—";
+    [ObservableProperty] private string periodBytesUp = "0 B";
+    [ObservableProperty] private string periodBytesDown = "0 B";
+    [ObservableProperty] private string periodSessionCount = "0";
+    [ObservableProperty] private string periodFailedSessions = "0";
+    [ObservableProperty] private string periodSuccessRate = "100%";
+    [ObservableProperty] private string periodRotationsCount = "0";
     public NavigationItem[] Navigation { get; } = [new("Dashboard", "Tổng quan", "Grid24"), new("Proxies", "Proxy", "Server24"), new("Devices", "Điện thoại", "Phone24"), new("Routing", "Pool và định tuyến", "Branch24"), new("Rotation", "Đổi IP", "ArrowSync24"), new("Sessions", "Lịch sử kết nối", "History24"), new("Networking", "Mạng Windows", "Globe24"), new("Health", "Chẩn đoán", "HeartPulse24"), new("Logs", "Nhật ký", "DocumentText24")];
     public ObservableCollection<DeviceDto> Devices { get; } = [];
     public ObservableCollection<ProxyEndpointDto> Endpoints { get; } = [];
@@ -126,6 +155,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         AdvertisedAddress = settings.AdvertisedAddress ?? "";
         AutoRefresh = settings.AutoRefresh;
         ServiceExecutable = settings.ServiceExecutable ?? FindServiceExecutable();
+        SelectedTimeFilter = TimeFilterOptions[0];
         _api = CreateClient(ApiAddress);
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
         _refreshTimer.Tick += OnRefreshTick;
@@ -170,13 +200,22 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string notificationTitle = "";
     [ObservableProperty] private bool notificationOpen;
     private string? _lastBackgroundError;
+    private DispatcherTimer? _notificationTimer;
     private void Notify(string message, bool error = false)
     {
         NotificationTitle = error ? "Chưa hoàn tất thao tác" : "Kết quả thao tác";
         NotificationMessage = message;
         NotificationOpen = true;
+        _notificationTimer?.Stop();
+        _notificationTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(error ? 7 : 4) };
+        _notificationTimer.Tick += (_, _) => { _notificationTimer?.Stop(); NotificationOpen = false; };
+        _notificationTimer.Start();
     }
-    [RelayCommand] private void DismissNotification() => NotificationOpen = false;
+    [RelayCommand] private void DismissNotification()
+    {
+        _notificationTimer?.Stop();
+        NotificationOpen = false;
+    }
     private void Log(string level, string message)
     {
         Logs.Insert(0, new(DateTimeOffset.Now.ToString("HH:mm:ss"), level, message));
@@ -187,8 +226,15 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         if (IsBusy) return;
         IsBusy = true;
         Interlocked.Increment(ref _configurationGeneration);
-        var previousMessage = StatusMessage;
-        try { await action(); if (success is not null) { StatusMessage = success; Log("INFO", success); } if (StatusMessage != previousMessage) Notify(StatusMessage); }
+        try
+        {
+            await action();
+            if (success is not null)
+            {
+                StatusMessage = success;
+                Log("INFO", success);
+            }
+        }
         catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { }
         catch (Exception exception) { StatusMessage = UserMessage(exception); Notify(StatusMessage, true); Log("ERROR", $"{exception.GetType().Name}: {UserMessage(exception)}"); }
         finally { IsBusy = false; }
@@ -281,6 +327,7 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
             SelectedPool = Pools.FirstOrDefault(pool => pool.Id == poolId) ?? Pools.FirstOrDefault();
             var traffic = await trafficTask;
             TrafficTotal = FormatBytes(traffic.BytesUp + traffic.BytesDown); BytesUp = FormatBytes(traffic.BytesUp); BytesDown = FormatBytes(traffic.BytesDown); RecordedSessions = traffic.SessionCount.ToString();
+            await LoadPeriodTrafficAsync();
             var page = await sessionsTask; Replace(Sessions, page.Items); _sessionTotal = page.TotalCount;
             SessionPageLabel = $"Trang {_sessionPage} / {Math.Max(1, (int)Math.Ceiling(_sessionTotal / 50d))} · {_sessionTotal} phiên đã đóng";
             Replace(Rotations, await rotationsTask);
@@ -313,15 +360,64 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(HasEndpoint))] private void EditProxy()
     {
         if (SelectedEndpoint is not { } endpoint) { StatusMessage = "Chọn proxy cần chỉnh sửa."; return; }
-        _editingEndpointId = endpoint.Id; NewProxyName = endpoint.Name; EndpointLimit = endpoint.MaxConnections.ToString(); EndpointEnabled = endpoint.Enabled;
-        OnPropertyChanged(nameof(DialogTitle)); OnPropertyChanged(nameof(IsCreatingEndpoint)); ProxyDialogOpen = true;
+        _editingEndpointId = endpoint.Id;
+        NewProxyName = endpoint.Name;
+        NewBindAddress = endpoint.BindAddress;
+        NewProxyPort = endpoint.Port.ToString();
+        NewProxyProtocol = string.IsNullOrEmpty(endpoint.Protocol) ? "Socks5" : endpoint.Protocol;
+        UsePool = endpoint.PoolId.HasValue;
+        TargetDeviceId = endpoint.DeviceId;
+        TargetPoolId = endpoint.PoolId;
+        EndpointLimit = endpoint.MaxConnections.ToString();
+        EndpointEnabled = endpoint.Enabled;
+        ProxyUsername = endpoint.Username ?? "";
+        ProxyPassword = "";
+        AllowedClients = endpoint.AllowedClients;
+        OnPropertyChanged(nameof(DialogTitle));
+        OnPropertyChanged(nameof(IsCreatingEndpoint));
+        ProxyDialogOpen = true;
     }
     [RelayCommand] private void CloseDialogs() { ProxyDialogOpen = false; DeviceDialogOpen = false; PoolDialogOpen = false; ProxyPassword = ""; }
     [RelayCommand] private Task SaveProxyAsync() => ExecuteAsync(async () =>
     {
-        if (_editingEndpointId is { } id) await SendAsync(HttpMethod.Put, $"{ApiRoutes.Proxies}/{id}", new UpdateProxyEndpointRequest(NewProxyName, ReadNumber(EndpointLimit, "Giới hạn kết nối", 1, 65535), EndpointEnabled));
-        else await SendAsync(HttpMethod.Post, ApiRoutes.Proxies, new CreateProxyEndpointRequest(NewProxyName.Trim(), NewBindAddress.Trim(), ReadNumber(NewProxyPort, "Cổng proxy", 1, 65535), NewProxyProtocol, UsePool ? null : TargetDeviceId, UsePool ? TargetPoolId : null, string.IsNullOrWhiteSpace(ProxyUsername) ? null : ProxyUsername, string.IsNullOrEmpty(ProxyPassword) ? null : ProxyPassword, AllowedClients));
-        CloseDialogs(); await RefreshCoreAsync();
+        var port = ReadNumber(NewProxyPort, "Cổng proxy", 1, 65535);
+        var limit = ReadNumber(EndpointLimit, "Giới hạn kết nối", 1, 65535);
+        var deviceId = UsePool ? null : TargetDeviceId;
+        var poolId = UsePool ? TargetPoolId : null;
+        var username = string.IsNullOrWhiteSpace(ProxyUsername) ? null : ProxyUsername.Trim();
+        var password = string.IsNullOrEmpty(ProxyPassword) ? null : ProxyPassword;
+        var clients = string.IsNullOrWhiteSpace(AllowedClients) ? null : AllowedClients.Trim();
+
+        if (_editingEndpointId is { } id)
+        {
+            await SendAsync(HttpMethod.Put, $"{ApiRoutes.Proxies}/{id}", new UpdateProxyEndpointRequest(
+                NewProxyName.Trim(),
+                NewBindAddress.Trim(),
+                port,
+                NewProxyProtocol.ToString(),
+                deviceId,
+                poolId,
+                limit,
+                EndpointEnabled,
+                username,
+                password,
+                clients));
+        }
+        else
+        {
+            await SendAsync(HttpMethod.Post, ApiRoutes.Proxies, new CreateProxyEndpointRequest(
+                NewProxyName.Trim(),
+                NewBindAddress.Trim(),
+                port,
+                NewProxyProtocol.ToString(),
+                deviceId,
+                poolId,
+                username,
+                password,
+                clients));
+        }
+        CloseDialogs();
+        await RefreshCoreAsync();
     }, "Đã lưu proxy endpoint.");
     [RelayCommand(CanExecute = nameof(HasEndpoint))] private Task DeleteProxyAsync() => ExecuteAsync(async () =>
     {
@@ -365,7 +461,8 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         var body = await response.Content.ReadFromJsonAsync<ApiResponse<ProxyTestResultDto>>(_lifetime.Token);
         var result = body?.Data ?? throw new IOException("Không nhận được kết quả kiểm tra.");
         ProbeResult = $"{(result.Reachable ? "HTTPS thành công" : "HTTPS thất bại")} · {result.LatencyMs} ms · IP: {(string.IsNullOrEmpty(result.ResolvedWanIp) ? "chưa xác minh" : result.ResolvedWanIp)}\n{result.Status}";
-        StatusMessage = ProbeResult; Log(result.Reachable ? "INFO" : "WARN", ProbeResult);
+        StatusMessage = result.Reachable ? "Kiểm tra HTTPS thành công." : "Kiểm tra HTTPS thất bại.";
+        Log(result.Reachable ? "INFO" : "WARN", ProbeResult);
     });
     [RelayCommand(CanExecute = nameof(HasDevice))] private Task RotateAsync() => ExecuteAsync(async () =>
     {
@@ -468,10 +565,34 @@ public sealed partial class DashboardViewModel : ObservableObject, IDisposable
         if (!int.TryParse(raw, out var value) || value < minimum || value > maximum) throw new ArgumentException($"{field} phải là số nguyên từ {minimum} đến {maximum}.");
         return value;
     }
+    public async Task LoadPeriodTrafficAsync()
+    {
+        try
+        {
+            var url = SelectedTimeFilter?.Days is null
+                ? ApiRoutes.ProxyTraffic
+                : $"{ApiRoutes.ProxyTraffic}?days={SelectedTimeFilter.Days.Value}";
+            var traffic = await ReadAsync<ProxyTrafficSummaryDto>(url);
+            PeriodTrafficTotal = FormatBytes(traffic.BytesUp + traffic.BytesDown);
+            PeriodBytesUp = FormatBytes(traffic.BytesUp);
+            PeriodBytesDown = FormatBytes(traffic.BytesDown);
+            PeriodSessionCount = traffic.SessionCount.ToString("N0");
+            PeriodFailedSessions = traffic.FailedSessions.ToString("N0");
+            var successCount = Math.Max(0, traffic.SessionCount - traffic.FailedSessions);
+            PeriodSuccessRate = traffic.SessionCount > 0
+                ? $"{(double)successCount / traffic.SessionCount * 100:0.#}%"
+                : "100%";
+            PeriodRotationsCount = traffic.RotationsCount.ToString("N0");
+        }
+        catch { }
+    }
+
     public static string FormatBytes(long value) => value switch { < 1024 => $"{value} B", < 1048576 => $"{value / 1024d:0.0} KB", < 1073741824 => $"{value / 1048576d:0.0} MB", _ => $"{value / 1073741824d:0.0} GB" };
-    public void Dispose() { _refreshTimer.Stop(); _refreshTimer.Tick -= OnRefreshTick; _lifetime.Cancel(); if (_hub is not null) _ = _hub.DisposeAsync(); _api.Dispose(); }
+    public void Dispose() { _refreshTimer.Stop(); _refreshTimer.Tick -= OnRefreshTick; _notificationTimer?.Stop(); _lifetime.Cancel(); if (_hub is not null) _ = _hub.DisposeAsync(); _api.Dispose(); }
     public sealed record NavigationItem(string Key, string Title, string Icon);
     public sealed record LogItem(string Time, string Level, string Message);
+    public sealed record StrategyOption(string Key, string DisplayName, string Description) { public override string ToString() => DisplayName; }
+    public sealed record TimeFilterOption(string Label, int? Days) { public override string ToString() => Label; }
 }
 public sealed partial class MemberChoice(Guid id, string name) : ObservableObject
 {
