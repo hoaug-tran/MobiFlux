@@ -1,11 +1,12 @@
 {
     "schema_version": 2,
-    "commit": "",
-    "indexed_at": "2026-09-26T15:41:41Z",
-    "project": "MobiFlux",
-    "nodes": 1181,
-    "edges": 2329,
-    "original_size": 3538944,
-    "compressed_size": 558512,
-    "compression_level": 3
+    "commit": "09f8a54f0f62c039f71809d68c307fb42b2bff16",
+    "indexed_at": "2026-10-18T02:04:51Z",
+    "project": "C-Users-hoaug-Desktop-Development-Active-MobiFlux",
+    "nodes": 2180,
+    "edges": 5666,
+    "original_size": 9437184,
+    "compressed_size": 1379235,
+    "compression_level": 3,
+    "reconcile_basis": "git-clean-head"
 }

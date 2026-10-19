@@ -23,6 +23,21 @@ try {
     }
     if (!$ready) { Get-Content (Join-Path $smokeRoot 'stdout.log'); throw 'Service did not become ready' }
     $api = "$origin/api/v1/mobiflux"
+    $malformed = Invoke-WebRequest "$api/devices" -Method Post -ContentType 'application/json' -Body '{' -SkipHttpErrorCheck
+    $malformedBody = $malformed.Content | ConvertFrom-Json
+    if ($malformed.StatusCode -ne 400 -or $malformedBody.succeeded -or !$malformedBody.error.code -or !$malformedBody.correlationId) { throw 'Malformed JSON must return structured 400 with correlation ID' }
+    $invalidFilter = Invoke-WebRequest "$api/proxy-sessions?deviceId=not-a-guid" -SkipHttpErrorCheck
+    if ($invalidFilter.StatusCode -ne 400) { throw 'Malformed session filter must return 400' }
+    $trace = Invoke-WebRequest "$api/devices" -Headers @{ 'X-Correlation-ID'='smoke-trace_1' }
+    if ($trace.Headers['X-Correlation-ID'][0] -ne 'smoke-trace_1') { throw 'Valid correlation ID was not preserved' }
+    $longTrace = Invoke-WebRequest "$api/devices" -Headers @{ 'X-Correlation-ID'=('x' * 256) }
+    if ($longTrace.Headers['X-Correlation-ID'][0].Length -gt 64) { throw 'Unbounded correlation ID accepted' }
+    $backupFile = Join-Path $smokeRoot 'download.db'
+    Invoke-WebRequest "$api/maintenance/backup" -Method Post -OutFile $backupFile
+    $signature = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($backupFile)[0..14])
+    if ($signature -ne 'SQLite format 3') { throw 'Backup is not a SQLite database' }
+    & dotnet (Join-Path $workspace 'tests/MobiFlux.Tests/bin/Debug/net10.0/MobiFlux.Tests.dll') --verify-backup $backupFile
+    if ($LASTEXITCODE -ne 0) { throw 'Backup integrity verification failed' }
     $devices = Invoke-RestMethod "$api/devices"
     if (!$devices.succeeded -or $devices.data.Count -ne 0) { throw 'Unexpected device fixtures in isolated database' }
     $test = Invoke-RestMethod "$api/proxies/test-quick" -Method Post -ContentType 'application/json' -Body '{"name":"smoke","bindAddress":"127.0.0.1","port":1,"protocol":"Socks5"}'
@@ -36,6 +51,9 @@ try {
     }
     if ($invalidStatus -ne 400) { throw 'Non-loopback proxy test must fail validation' }
     $fixture = Invoke-RestMethod "$api/devices" -Method Post -ContentType 'application/json' -Body '{"adbSerial":"smoke-no-physical-device","name":"Smoke fixture"}'
+    Invoke-WebRequest "$api/maintenance/backup" -Method Post -OutFile $backupFile
+    & dotnet (Join-Path $workspace 'tests/MobiFlux.Tests/bin/Debug/net10.0/MobiFlux.Tests.dll') --verify-backup $backupFile $fixture.data.id
+    if ($LASTEXITCODE -ne 0) { throw 'Populated backup verification failed' }
     $proxyReservation = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
     $proxyReservation.Start()
     $proxyPort = $proxyReservation.LocalEndpoint.Port
@@ -47,6 +65,18 @@ try {
     $openTest = Invoke-RestMethod "$api/proxies/$endpointId/test" -Method Post
     if (!$openTest.succeeded -or $openTest.data.reachable -or $openTest.data.resolvedWanIp) { throw 'Open listener without cellular incorrectly reported usable' }
     Invoke-RestMethod "$api/proxy-runtime/$endpointId" -Method Delete | Out-Null
+    $interfaces = Invoke-RestMethod "$api/networking/interfaces"
+    if (!$interfaces.succeeded) { throw 'Network interfaces API failed' }
+    $connections = Invoke-RestMethod "$api/networking/netstat"
+    if (!$connections.succeeded) { throw 'Netstat API failed' }
+    $invalidPing = Invoke-WebRequest "$api/networking/ping" -Method Post -ContentType 'application/json' -Body '{"host":"https://invalid/path"}' -SkipHttpErrorCheck
+    if ($invalidPing.StatusCode -ne 400) { throw 'Invalid ping host must be rejected' }
+    $crossSiteBackup = Invoke-WebRequest "$api/maintenance/backup" -Method Post -Headers @{ 'Sec-Fetch-Site'='cross-site' } -SkipHttpErrorCheck
+    if ($crossSiteBackup.StatusCode -ne 403) { throw 'Cross-site backup without Origin must be rejected' }
+    $foreignOrigin = Invoke-WebRequest "$api/devices" -Headers @{ Origin='https://untrusted.example' } -SkipHttpErrorCheck
+    if ($foreignOrigin.StatusCode -ne 403) { throw 'Foreign browser origin must be rejected' }
+    $foreignHost = Invoke-WebRequest "$api/devices" -Headers @{ Host='untrusted.example' } -SkipHttpErrorCheck
+    if ($foreignHost.StatusCode -ne 403) { throw 'Foreign Host must be rejected' }
     $updated = Invoke-RestMethod "$api/proxies/$endpointId" -Method Put -ContentType 'application/json' -Body '{"name":"Renamed endpoint","maxConnections":32,"enabled":true}'
     if ($updated.data.name -ne 'Renamed endpoint' -or $updated.data.maxConnections -ne 32) { throw 'Endpoint update was not persisted' }
     $poolBody = @{ name='Smoke pool'; strategy='RoundRobin'; stickyTtlSeconds=60; members=@(@{ deviceId=$fixture.data.id; weight=1; priority=0 }) } | ConvertTo-Json -Depth 5
@@ -54,6 +84,9 @@ try {
     $poolUpdate = @{ strategy='WeightedRoundRobin'; stickyTtlSeconds=120; enabled=$true; members=@(@{ deviceId=$fixture.data.id; weight=3; priority=1 }) } | ConvertTo-Json -Depth 5
     $poolSaved = Invoke-RestMethod "$api/proxy-pools/$($pool.data.id)" -Method Put -ContentType 'application/json' -Body $poolUpdate
     if ($poolSaved.data.members[0].weight -ne 3) { throw 'Pool weights were not persisted' }
+    Invoke-RestMethod "$api/proxy-pools/$($pool.data.id)" -Method Delete | Out-Null
+    $remainingPools = Invoke-RestMethod "$api/proxy-pools"
+    if ($remainingPools.data.Count -ne 0) { throw 'Pool delete was not persisted' }
     $rotationStatus = 0
     try {
         $resp = Invoke-WebRequest "$api/rotation/rotate" -Method Post -ContentType 'application/json' -Body (@{ triggeredBy='Smoke'; deviceId=$fixture.data.id } | ConvertTo-Json) -UseBasicParsing

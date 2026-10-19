@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict'
+import {readFileSync} from 'node:fs'
+const vm=readFileSync(new URL('../src/MobiFlux.Desktop/DashboardViewModel.cs',import.meta.url),'utf8')
+const view=readFileSync(new URL('../src/MobiFlux.Desktop/MainWindow.xaml',import.meta.url),'utf8')
+assert.match(vm,/if \(_lastBackgroundError != message\)/)
+assert.match(vm,/Notify\(StatusMessage, true\)/)
+assert.match(vm,/DismissNotification/)
+assert.match(view,/NotificationOpen/)
+assert.match(view,/NotificationMessage/)
+assert.match(view,/AutomationProperties.LiveSetting="Assertive"/)
+console.log('PASS: native notification host, close command, failure path and background deduplication')
+assert.match(vm,/endpointId=\{SessionEndpointId\}&deviceId=\{SessionDeviceId\}/)
+assert.match(vm,/ApplySessionFiltersAsync/)
+assert.match(view,/ClearSessionFiltersCommand/)
+const save=vm.slice(vm.indexOf('private Task SaveSettingsAsync()'),vm.indexOf('private void ToggleTheme()'))
+assert.ok(save.indexOf('SavePreferences')<save.indexOf('_api.Dispose()'))
+assert.match(save,/catch \{ client.Dispose\(\); throw; \}/)
