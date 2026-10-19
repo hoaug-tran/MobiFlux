@@ -7,7 +7,7 @@ using MobiFlux.Shared.Contracts;
 
 namespace MobiFlux.Application.Features.Proxies.CreateProxyEndpoint;
 
-public sealed class CreateProxyEndpointHandler(IProxyRepository proxies, IDeviceRepository devices, IProxyDefaults defaults) : IRequestHandler<CreateProxyEndpointCommand, ProxyEndpointDto>
+public sealed class CreateProxyEndpointHandler(IProxyRepository proxies, IDeviceRepository devices, IProxyDefaults defaults, IProxyRuntime runtime) : IRequestHandler<CreateProxyEndpointCommand, ProxyEndpointDto>
 {
     public async Task<ProxyEndpointDto> Handle(CreateProxyEndpointCommand command, CancellationToken cancellationToken)
     {
@@ -18,6 +18,7 @@ public sealed class CreateProxyEndpointHandler(IProxyRepository proxies, IDevice
         var endpoint = new ProxyEndpoint(command.Name, command.BindAddress, command.Port, protocol, command.DeviceId, command.PoolId, defaults.DnsMode, defaults.MaxConnections);
         endpoint.ConfigureAccess(command.Username, command.Password, command.AllowedClients);
         await proxies.AddEndpointAsync(endpoint, cancellationToken); await proxies.SaveChangesAsync(cancellationToken);
-        return endpoint.ToDto(false);
+        if (endpoint.Enabled) await runtime.StartAsync(endpoint, await devices.ListAsync(cancellationToken), await proxies.ListPoolsAsync(cancellationToken), cancellationToken);
+        return endpoint.ToDto(runtime.IsRunning(endpoint.Id));
     }
 }

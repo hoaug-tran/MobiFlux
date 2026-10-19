@@ -31,6 +31,10 @@ class CellularProxyService : Service() {
         val request = NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build()
         connectivity.requestNetwork(request, callback!!)
     }
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground(1, notification())
+        return START_STICKY
+    }
     override fun onDestroy() { state.clear(); callback?.let { connectivity.unregisterNetworkCallback(it) }; tunnel?.close(); control?.close(); super.onDestroy() }
     override fun onBind(intent: Intent?): IBinder? = null
     private fun notification(): android.app.Notification {

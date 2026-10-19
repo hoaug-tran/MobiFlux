@@ -18,7 +18,7 @@ try {
     $smokeProcess = Start-Process dotnet -ArgumentList @($serviceDll) -WorkingDirectory $serviceDirectory -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $smokeRoot 'stdout.log') -RedirectStandardError (Join-Path $smokeRoot 'stderr.log')
     $ready = $false
     for ($attempt = 0; $attempt -lt 40; $attempt++) {
-        try { $health = Invoke-WebRequest "$origin/health" -TimeoutSec 1; $ready = $true; break }
+        try { $health = Invoke-WebRequest "$origin/health" -TimeoutSec 1 -UseBasicParsing; $ready = $true; break }
         catch { Start-Sleep -Milliseconds 200 }
     }
     if (!$ready) { Get-Content (Join-Path $smokeRoot 'stdout.log'); throw 'Service did not become ready' }
@@ -27,12 +27,19 @@ try {
     if (!$devices.succeeded -or $devices.data.Count -ne 0) { throw 'Unexpected device fixtures in isolated database' }
     $test = Invoke-RestMethod "$api/proxies/test-quick" -Method Post -ContentType 'application/json' -Body '{"name":"smoke","bindAddress":"127.0.0.1","port":1,"protocol":"Socks5"}'
     if (!$test.succeeded -or $test.data.reachable -or $test.data.resolvedWanIp) { throw 'Closed proxy incorrectly reported reachable' }
-    $invalid = Invoke-WebRequest "$api/proxies/test-quick" -Method Post -ContentType 'application/json' -Body '{"name":"smoke","bindAddress":"8.8.8.8","port":1080,"protocol":"Socks5"}' -SkipHttpErrorCheck
-    if ($invalid.StatusCode -ne 400) { throw 'Non-loopback proxy test must fail validation' }
+    $invalidStatus = 0
+    try {
+        $resp = Invoke-WebRequest "$api/proxies/test-quick" -Method Post -ContentType 'application/json' -Body '{"name":"smoke","bindAddress":"8.8.8.8","port":1080,"protocol":"Socks5"}' -UseBasicParsing
+        $invalidStatus = [int]$resp.StatusCode
+    } catch {
+        if ($_.Exception -and $_.Exception.Response) { $invalidStatus = [int]$_.Exception.Response.StatusCode } else { throw }
+    }
+    if ($invalidStatus -ne 400) { throw 'Non-loopback proxy test must fail validation' }
     $fixture = Invoke-RestMethod "$api/devices" -Method Post -ContentType 'application/json' -Body '{"adbSerial":"smoke-no-physical-device","name":"Smoke fixture"}'
-    $reservation.Start()
-    $proxyPort = $reservation.LocalEndpoint.Port
-    $reservation.Stop()
+    $proxyReservation = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    $proxyReservation.Start()
+    $proxyPort = $proxyReservation.LocalEndpoint.Port
+    $proxyReservation.Stop()
     $endpointBody = @{ name='Smoke endpoint'; bindAddress='127.0.0.1'; port=$proxyPort; protocol='Socks5'; deviceId=$fixture.data.id } | ConvertTo-Json
     $endpoint = Invoke-RestMethod "$api/proxies" -Method Post -ContentType 'application/json' -Body $endpointBody
     $endpointId = $endpoint.data.id
@@ -47,8 +54,14 @@ try {
     $poolUpdate = @{ strategy='WeightedRoundRobin'; stickyTtlSeconds=120; enabled=$true; members=@(@{ deviceId=$fixture.data.id; weight=3; priority=1 }) } | ConvertTo-Json -Depth 5
     $poolSaved = Invoke-RestMethod "$api/proxy-pools/$($pool.data.id)" -Method Put -ContentType 'application/json' -Body $poolUpdate
     if ($poolSaved.data.members[0].weight -ne 3) { throw 'Pool weights were not persisted' }
-    $rotation = Invoke-WebRequest "$api/rotation/rotate" -Method Post -ContentType 'application/json' -Body (@{ triggeredBy='Smoke'; deviceId=$fixture.data.id } | ConvertTo-Json) -SkipHttpErrorCheck
-    if ($rotation.StatusCode -ne 409) { throw 'Offline selected device must not be rotated' }
+    $rotationStatus = 0
+    try {
+        $resp = Invoke-WebRequest "$api/rotation/rotate" -Method Post -ContentType 'application/json' -Body (@{ triggeredBy='Smoke'; deviceId=$fixture.data.id } | ConvertTo-Json) -UseBasicParsing
+        $rotationStatus = [int]$resp.StatusCode
+    } catch {
+        if ($_.Exception -and $_.Exception.Response) { $rotationStatus = [int]$_.Exception.Response.StatusCode } else { throw }
+    }
+    if ($rotationStatus -ne 409) { throw 'Offline selected device must not be rotated' }
     Invoke-RestMethod "$api/proxies/$endpointId" -Method Delete | Out-Null
     $remaining = Invoke-RestMethod "$api/proxies"
     if ($remaining.data.Count -ne 0) { throw 'Endpoint delete was not persisted' }

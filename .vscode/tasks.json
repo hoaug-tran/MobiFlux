@@ -1,0 +1,255 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Android APK",
+			"type": "shell",
+			"command": "Set-Location android; .\\gradlew.bat assembleDebug"
+		},
+		{
+			"label": "Deploy Agent to Phone",
+			"type": "shell",
+			"command": "adb -s VGPB8LFANZNBVOHQ install -r android\\app\\build\\outputs\\apk\\debug\\app-debug.apk; adb -s VGPB8LFANZNBVOHQ shell am force-stop com.mobiflux.agent; adb -s VGPB8LFANZNBVOHQ shell am start -n com.mobiflux.agent/.MainActivity"
+		},
+		{
+			"label": "Check Agent Status",
+			"type": "shell",
+			"command": "adb -s VGPB8LFANZNBVOHQ forward tcp:18081 tcp:18081; Start-Sleep -Milliseconds 500; Invoke-RestMethod -Uri \"http://127.0.0.1:18081/agent/status\" -UseBasicParsing | ConvertTo-Json"
+		},
+		{
+			"label": "Reconcile Devices",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/devices/reconcile\" -Method Post | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Run Discovery and List Devices",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/device-discovery-runs\" -Method Post | ConvertTo-Json -Depth 5; Start-Sleep -Seconds 1; Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/devices\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Test Proxy Endpoints",
+			"type": "shell",
+			"command": "$proxies = Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\"; $proxies | ConvertTo-Json -Depth 5; foreach ($p in $proxies.data) { Write-Host \"Testing proxy: $($p.id) on port $($p.port)...\"; try { $res = Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies/$($p.id)/test\" -Method Post; $res | ConvertTo-Json -Depth 5 } catch { Write-Host \"Error: $_\" } }"
+		},
+		{
+			"label": "Check Port 1080",
+			"type": "shell",
+			"command": "Test-NetConnection -Port 1080 -ComputerName 127.0.0.1"
+		},
+		{
+			"label": "Start Proxy Endpoint",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxy-runtime/2e71a038-4073-43ea-a04f-f8cdf4d4550c\" -Method Put | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Run Proxy Test",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies/2e71a038-4073-43ea-a04f-f8cdf4d4550c/test\" -Method Post | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Test SOCKS5 with curl",
+			"type": "shell",
+			"command": "curl.exe -x socks5h://127.0.0.1:1080 https://api.ipify.org"
+		},
+		{
+			"label": "Check MobiFlux Processes",
+			"type": "shell",
+			"command": "Get-Process | Where-Object { $_.ProcessName -like \"*MobiFlux*\" } | Select-Object Id, ProcessName"
+		},
+		{
+			"label": "Check MobiFlux Processes 2",
+			"type": "shell",
+			"command": "Get-Process -Name MobiFlux* -ErrorAction SilentlyContinue | Select-Object Id, ProcessName"
+		},
+		{
+			"label": "List Proxies",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Build .NET Solution",
+			"type": "shell",
+			"command": "dotnet build"
+		},
+		{
+			"label": "Check MobiFlux Service Command Line",
+			"type": "shell",
+			"command": "Get-CimInstance Win32_Process -Filter \"Name LIKE 'MobiFlux%'\" | Select-Object ProcessId, Name, CommandLine"
+		},
+		{
+			"label": "Get MobiFlux Process Path",
+			"type": "shell",
+			"command": "Get-Process -Name MobiFlux* | Select-Object Id, ProcessName, Path"
+		},
+		{
+			"label": "Check Devices State",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/devices\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Test Proxy Again",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies/2e71a038-4073-43ea-a04f-f8cdf4d4550c/test\" -Method Post | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Get Local IP",
+			"type": "shell",
+			"command": "Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notlike \"*Loopback*\" -and $_.IPAddress -notlike \"169.254*\" } | Select-Object IPAddress, InterfaceAlias"
+		},
+		{
+			"label": "Run ipconfig",
+			"type": "shell",
+			"command": "ipconfig"
+		},
+		{
+			"label": "Check Port 8080",
+			"type": "shell",
+			"command": "Test-NetConnection -Port 8080 -ComputerName 127.0.0.1"
+		},
+		{
+			"label": "Check Firewall Rules",
+			"type": "shell",
+			"command": "Get-NetFirewallRule -DisplayName \"*MobiFlux*\" -ErrorAction SilentlyContinue"
+		},
+		{
+			"label": "Check Firewall Port Filter",
+			"type": "shell",
+			"command": "Get-NetFirewallPortFilter -AssociatedNetFirewallRule (Get-NetFirewallRule -DisplayName \"MobiFlux Proxy\")"
+		},
+		{
+			"label": "Get Firewall Ports",
+			"type": "shell",
+			"command": "Get-NetFirewallRule -DisplayName \"MobiFlux Proxy\" | Get-NetFirewallPortFilter"
+		},
+		{
+			"label": "Create LAN HTTP Proxy",
+			"type": "shell",
+			"command": "$body = '{\"name\":\"Proxy-LAN-HTTP\",\"bindAddress\":\"0.0.0.0\",\"port\":8080,\"protocol\":\"HttpConnect\",\"deviceId\":\"fdcccbde-a5bb-4930-aefa-66030ab47886\"}'; Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\" -Method Post -Body $body -ContentType \"application/json\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Check Service Log Tail",
+			"type": "shell",
+			"command": "Get-Content src/MobiFlux.Service/logs/mobiflux-20261018.log -Tail 20"
+		},
+		{
+			"label": "Search Error in Log",
+			"type": "shell",
+			"command": "Get-Content src/MobiFlux.Service/logs/mobiflux-20261018.log | Select-String \"POST /api/v1/mobiflux/proxies\" -Context 3,5"
+		},
+		{
+			"label": "Build Solution 2",
+			"type": "shell",
+			"command": "dotnet build"
+		},
+		{
+			"label": "Restart Service",
+			"type": "shell",
+			"command": "Stop-Process -Name MobiFlux.Service -Force -ErrorAction SilentlyContinue; Start-Process -FilePath \"src\\MobiFlux.Service\\bin\\Debug\\net10.0\\MobiFlux.Service.exe\" -WorkingDirectory \"src\\MobiFlux.Service\""
+		},
+		{
+			"label": "Check Health",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/health\""
+		},
+		{
+			"label": "Create LAN HTTP Proxy 2",
+			"type": "shell",
+			"command": "$body = '{\"name\":\"Proxy-LAN-HTTP\",\"bindAddress\":\"0.0.0.0\",\"port\":8080,\"protocol\":\"HttpConnect\",\"deviceId\":\"fdcccbde-a5bb-4930-aefa-66030ab47886\"}'; Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\" -Method Post -Body $body -ContentType \"application/json\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Get 400 Error Body",
+			"type": "shell",
+			"command": "try { $body = '{\"name\":\"Proxy-LAN-HTTP\",\"bindAddress\":\"0.0.0.0\",\"port\":8080,\"protocol\":\"HttpConnect\",\"deviceId\":\"fdcccbde-a5bb-4930-aefa-66030ab47886\"}'; Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\" -Method Post -Body $body -ContentType \"application/json\" } catch { $_.Exception.Response.GetResponseStream() | ForEach-Object { (New-Object System.IO.StreamReader($_)).ReadToEnd() } }"
+		},
+		{
+			"label": "Create LAN Proxy Correct JSON",
+			"type": "shell",
+			"command": "$obj = @{ name = 'Proxy-LAN-HTTP'; bindAddress = '0.0.0.0'; port = 8080; protocol = 'HttpConnect'; deviceId = 'fdcccbde-a5bb-4930-aefa-66030ab47886' }; Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\" -Method Post -Body ($obj | ConvertTo-Json) -ContentType \"application/json\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Get 400 Error Body 2",
+			"type": "shell",
+			"command": "try { $obj = @{ name = 'Proxy-LAN-HTTP'; bindAddress = '0.0.0.0'; port = 8080; protocol = 'HttpConnect'; deviceId = 'fdcccbde-a5bb-4930-aefa-66030ab47886' }; Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\" -Method Post -Body ($obj | ConvertTo-Json) -ContentType \"application/json\" } catch { $_.Exception.Response.GetResponseStream() | ForEach-Object { (New-Object System.IO.StreamReader($_)).ReadToEnd() } }"
+		},
+		{
+			"label": "Check StartTime",
+			"type": "shell",
+			"command": "Get-Process -Name MobiFlux* | Select-Object Id, ProcessName, StartTime"
+		},
+		{
+			"label": "Check DLL Timestamps",
+			"type": "shell",
+			"command": "Get-Item src\\MobiFlux.Service\\bin\\Debug\\net10.0\\MobiFlux.*.dll | Select-Object Name, LastWriteTime"
+		},
+		{
+			"label": "Rebuild With Processes Stopped",
+			"type": "shell",
+			"command": "Stop-Process -Name MobiFlux* -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; dotnet build"
+		},
+		{
+			"label": "Verify Timestamps",
+			"type": "shell",
+			"command": "Get-Item src\\MobiFlux.Service\\bin\\Debug\\net10.0\\MobiFlux.*.dll | Select-Object Name, LastWriteTime"
+		},
+		{
+			"label": "Start Both Apps",
+			"type": "shell",
+			"command": "Start-Process -FilePath \"src\\MobiFlux.Service\\bin\\Debug\\net10.0\\MobiFlux.Service.exe\" -WorkingDirectory \"src\\MobiFlux.Service\"; Start-Process -FilePath \"src\\MobiFlux.Desktop\\bin\\Debug\\net10.0-windows\\MobiFlux.Desktop.exe\" -WorkingDirectory \"src\\MobiFlux.Desktop\""
+		},
+		{
+			"label": "Create LAN Proxy Now",
+			"type": "shell",
+			"command": "$obj = @{ name = 'Proxy-LAN-HTTP'; bindAddress = '0.0.0.0'; port = 8080; protocol = 'HttpConnect'; deviceId = 'fdcccbde-a5bb-4930-aefa-66030ab47886' }; Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/proxies\" -Method Post -Body ($obj | ConvertTo-Json) -ContentType \"application/json\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Test Port 8080 Curl",
+			"type": "shell",
+			"command": "curl.exe -x http://127.0.0.1:8080 https://api.ipify.org"
+		},
+		{
+			"label": "Test Local IP 8080",
+			"type": "shell",
+			"command": "curl.exe -x http://192.168.10.106:8080 https://api.ipify.org"
+		},
+		{
+			"label": "Allow Port 8080 Inbound",
+			"type": "shell",
+			"command": "netsh advfirewall firewall add rule name=\"MobiFlux LAN 8080\" dir=in action=allow protocol=TCP localport=8080"
+		},
+		{
+			"label": "Allow MobiFlux Service Inbound",
+			"type": "shell",
+			"command": "New-NetFirewallRule -DisplayName 'MobiFlux Service' -Direction Inbound -Program 'C:\\Users\\hoaug\\Desktop\\MobiFlux\\src\\MobiFlux.Service\\bin\\Debug\\net10.0\\MobiFlux.Service.exe' -Action Allow -Profile Any -ErrorAction SilentlyContinue"
+		},
+		{
+			"label": "Check Existing Rules",
+			"type": "shell",
+			"command": "Get-NetFirewallRule | Where-Object { $_.DisplayName -like \"*MobiFlux*\" -or $_.DisplayName -like \"*net10*\" } | Select-Object DisplayName, Direction, Action"
+		},
+		{
+			"label": "List ADB Devices",
+			"type": "shell",
+			"command": "adb devices -l"
+		},
+		{
+			"label": "Check scrcpy Path",
+			"type": "shell",
+			"command": "Test-Path \"C:\\Users\\hoaug\\Downloads\\scrcpy-win64-v3.3.3\\scrcpy.exe\""
+		},
+		{
+			"label": "Check Rotation History",
+			"type": "shell",
+			"command": "Invoke-RestMethod -Uri \"http://127.0.0.1:5080/api/v1/mobiflux/rotation/history\" | ConvertTo-Json -Depth 5"
+		},
+		{
+			"label": "Check New IP Egress",
+			"type": "shell",
+			"command": "curl.exe -x http://127.0.0.1:8080 https://api.ipify.org"
+		},
+		{
+			"label": "Get Proxy Geolocation",
+			"type": "shell",
+			"command": "curl.exe -s -x http://127.0.0.1:8080 http://ip-api.com/json/"
+		}
+	]
+}

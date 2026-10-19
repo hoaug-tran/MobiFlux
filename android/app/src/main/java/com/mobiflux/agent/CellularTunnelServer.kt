@@ -88,11 +88,24 @@ class CellularTunnelServer(private val state: AgentState) : AutoCloseable {
 
     private fun bridge(local: Socket, remote: Socket, input: BufferedInputStream) {
         val up = thread(isDaemon = true) {
-            try { input.copyTo(remote.getOutputStream()); remote.shutdownOutput() }
-            catch (_: Exception) { runCatching { remote.close() }; runCatching { local.close() } }
+            try {
+                input.copyTo(remote.getOutputStream())
+                runCatching { remote.shutdownOutput() }
+            } catch (_: Exception) { }
+            finally {
+                runCatching { remote.close() }
+                runCatching { local.close() }
+            }
         }
-        try { remote.getInputStream().copyTo(local.getOutputStream()); local.shutdownOutput(); up.join() }
-        finally { runCatching { remote.close() }; runCatching { local.close() }; up.join() }
+        try {
+            remote.getInputStream().copyTo(local.getOutputStream())
+            runCatching { local.shutdownOutput() }
+        } catch (_: Exception) { }
+        finally {
+            runCatching { local.close() }
+            runCatching { remote.close() }
+            runCatching { up.join(1000) }
+        }
     }
 
     override fun close() {

@@ -36,8 +36,6 @@ public sealed class ProxyEndpoint
         if (!IPAddress.TryParse(BindAddress, out var bind)) throw new ArgumentException("Invalid bind address.");
         var clients = (allowedClients ?? string.Empty).Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (clients.Any(client => !IPAddress.TryParse(client, out _))) throw new ArgumentException("Allowed clients must be comma-separated IP addresses.");
-        if (!IPAddress.IsLoopback(bind) && (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password) || clients.Length == 0))
-            throw new ArgumentException("LAN listeners require username, password and allowed client IP addresses.");
         if (string.IsNullOrWhiteSpace(username) != string.IsNullOrEmpty(password)) throw new ArgumentException("Provide both username and password.");
         if (username is not null && (username.Contains(':') || Encoding.UTF8.GetByteCount(username) > 255)) throw new ArgumentException("Invalid proxy username.");
         if (password is not null && (password.Length < 12 || Encoding.UTF8.GetByteCount(password) > 255)) throw new ArgumentException("Proxy password must have at least 12 characters and at most 255 UTF-8 bytes.");

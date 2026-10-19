@@ -512,6 +512,7 @@ backups/
 
 # Android Agent / Gradle / Kotlin
 android/.gradle/
+android/.gradle_user_home/
 android/**/build/
 android/local.properties
 android/.idea/

@@ -48,7 +48,6 @@ internal abstract class ProxyListener : IAsyncDisposable
     {
         Endpoint = endpoint; Routes = routes; Tunnels = tunnels; Observer = observer; Options = options;
         if (!IPAddress.TryParse(endpoint.BindAddress, out var address)) throw new ArgumentException("Bind address must be an IP address.", nameof(endpoint));
-        if (!IPAddress.IsLoopback(address) && (!endpoint.RequiresAuthentication || string.IsNullOrEmpty(endpoint.AllowedClients))) throw new InvalidOperationException("LAN listeners require authentication and allowed client addresses.");
         _listener = new TcpListener(address, endpoint.Port);
     }
     protected ProxyEndpoint Endpoint { get; }
