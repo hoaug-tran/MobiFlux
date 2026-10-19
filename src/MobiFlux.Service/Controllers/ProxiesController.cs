@@ -18,7 +18,19 @@ public sealed class ProxiesController(ISender sender) : ApiControllerBase
 {
     [HttpPut("{endpointId:guid}")]
     public async Task<ActionResult<ApiResponse<ProxyEndpointDto>>> Update(Guid endpointId, UpdateProxyEndpointRequest request, CancellationToken cancellationToken) =>
-        Success(await sender.Send(new UpdateProxyEndpointCommand(endpointId, request.Name, request.MaxConnections, request.Enabled), cancellationToken));
+        Success(await sender.Send(new UpdateProxyEndpointCommand(
+            endpointId,
+            request.Name,
+            request.BindAddress,
+            request.Port,
+            request.Protocol,
+            request.DeviceId,
+            request.PoolId,
+            request.MaxConnections,
+            request.Enabled,
+            request.Username,
+            request.Password,
+            request.AllowedClients), cancellationToken));
     [HttpDelete("{endpointId:guid}")]
     public async Task<IActionResult> Delete(Guid endpointId, CancellationToken cancellationToken)
     {

@@ -16,6 +16,6 @@ public sealed class ProxySessionsController(ISender sender) : ApiControllerBase
         Success(await sender.Send(new GetProxySessionsQuery(endpointId, deviceId, page, pageSize), cancellationToken));
 
     [HttpGet("~/" + ApiRoutes.ProxyTraffic)]
-    public async Task<ActionResult<ApiResponse<ProxyTrafficSummaryDto>>> GetTrafficSummary(CancellationToken cancellationToken) =>
-        Success(await sender.Send(new GetProxyTrafficSummaryQuery(), cancellationToken));
+    public async Task<ActionResult<ApiResponse<ProxyTrafficSummaryDto>>> GetTrafficSummary([FromQuery] int? days, CancellationToken cancellationToken) =>
+        Success(await sender.Send(new GetProxyTrafficSummaryQuery(days), cancellationToken));
 }
