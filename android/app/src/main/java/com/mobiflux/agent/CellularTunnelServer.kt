@@ -77,34 +77,12 @@ class CellularTunnelServer(private val state: AgentState) : AutoCloseable {
                         if (!running || state.current() != network) { output.write(2); output.flush(); return }
                         output.write(0); output.flush(); connected = true
                         socket.soTimeout = 0
-                        bridge(socket, target, input)
+                        CellularStreamBridge.bridge(socket, target, input)
                     } finally { sockets.remove(target) }
                 }
             } catch (_: Exception) {
                 if (!connected) try { output.write(4); output.flush() } catch (_: Exception) { }
             }
-        }
-    }
-
-    private fun bridge(local: Socket, remote: Socket, input: BufferedInputStream) {
-        val up = thread(isDaemon = true) {
-            try {
-                input.copyTo(remote.getOutputStream())
-                runCatching { remote.shutdownOutput() }
-            } catch (_: Exception) { }
-            finally {
-                runCatching { remote.close() }
-                runCatching { local.close() }
-            }
-        }
-        try {
-            remote.getInputStream().copyTo(local.getOutputStream())
-            runCatching { local.shutdownOutput() }
-        } catch (_: Exception) { }
-        finally {
-            runCatching { local.close() }
-            runCatching { remote.close() }
-            runCatching { up.join(1000) }
         }
     }
 
